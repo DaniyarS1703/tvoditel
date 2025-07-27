@@ -6,55 +6,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    #debug-url {
-      background: #f0f0f0;
-      border: 1px solid #ccc;
-      padding: 12px;
-      margin: 12px;
-      font-size: 12px;
-      word-break: break-all;
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(location.search);
+      const uid = params.get('user_id');
+      if (uid) localStorage.setItem('tg_user_id', uid);
+    });
+    function openDriver() {
+      const uid = localStorage.getItem('tg_user_id') || '';
+      location.href = `/driver?user_id=${uid}`;
     }
-  </style>
+  </script>
 </head>
 <body>
-
   <header class="header">
     <div class="city">Алматы</div>
     <button class="btn-profile">ЛК</button>
   </header>
-
   <main class="main">
-    <div id="debug-url">URL: загрузка…</div>
-
     <a href="/list"><button class="big-button btn-ads">📋 Объявления</button></a>
     <a href="/order"><button class="big-button btn-order">🚗 Заказать трезвого водителя</button></a>
     <button class="big-button btn-driver" onclick="openDriver()">Я — водитель</button>
   </main>
-
   <footer class="footer">
     <button class="small-button btn-exit">Выйти</button>
   </footer>
-
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-
-    // Показываем полный URL
-    document.getElementById('debug-url').innerText =
-      'URL текущей страницы:\n' + window.location.href;
-
-    // Сохраняем user_id, если он есть
-    const params = new URLSearchParams(window.location.search);
-    const uid = params.get('user_id');
-    if (uid) {
-      localStorage.setItem('tg_user_id', uid);
-    }
-
-    function openDriver() {
-      const storedUid = localStorage.getItem('tg_user_id') || '';
-      window.location.href = `/driver?user_id=${storedUid}`;
-    }
-  </script>
 </body>
 </html>
