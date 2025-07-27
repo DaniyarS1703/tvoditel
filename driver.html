@@ -46,15 +46,11 @@
   </main>
 
   <script>
-    // Разворачиваем WebApp-iframe
     if (window.Telegram?.WebApp) window.Telegram.WebApp.expand();
-
     document.addEventListener('DOMContentLoaded', () => {
-      // Подставляем Telegram ID
       const params = new URLSearchParams(window.location.search);
       const uid = params.get('user_id') || localStorage.getItem('tg_user_id') || '1234567890';
       document.getElementById('driver-id').value = uid;
-
       loadDriverOrders();
     });
 
@@ -64,7 +60,7 @@
         .then(data => {
           const c = document.getElementById('driver-orders');
           if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
-          c.innerHTML = data.map(o => `
+          c.innerHTML = data.map(o=>`
             <div class="order-item">
               <strong>${o.name}</strong> (${o.phone})<br>
               ${o.car_model} — ${o.route}<br>
@@ -76,36 +72,41 @@
 
     function previewAvatar(e) {
       const reader = new FileReader();
-      reader.onload = () => document.getElementById('avatar-img').src = reader.result;
+      reader.onload = ()=> document.getElementById('avatar-img').src = reader.result;
       reader.readAsDataURL(e.target.files[0]);
     }
 
     async function saveDriver() {
       const form = new FormData();
-      form.append('tg_id',   document.getElementById('driver-id').value);
-      form.append('name',    document.getElementById('driver-name').value.trim());
-      form.append('city',    document.getElementById('driver-city').value.trim());
+      form.append('tg_id', document.getElementById('driver-id').value);
+      form.append('name',  document.getElementById('driver-name').value.trim());
+      form.append('city',  document.getElementById('driver-city').value.trim());
       const file = document.getElementById('driver-avatar').files[0];
       if (file) form.append('avatar', file);
 
-      console.log('Saving driver, form entries:');
-      for (let pair of form.entries()) {
-        console.log(pair[0], pair[1]);
-      }
+      console.log('[saveDriver] formData entries:');
+      for (let [k,v] of form.entries()) console.log(k, v);
 
       try {
-        const res = await fetch('/api/drivers', { method: 'POST', body: form });
-        console.log('Response status:', res.status, res.statusText);
-        const data = await res.json();
-        console.log('Response JSON:', data);
-        if (!res.ok || data.status !== 'ok') {
-          throw new Error(JSON.stringify(data));
+        const res = await fetch('/api/drivers', { method:'POST', body: form });
+        const text = await res.text();
+        console.log('[saveDriver] raw response:', text);
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch(e) {
+          throw new Error('Невалидный JSON: ' + e.message);
         }
-        const status = document.getElementById('driver-save-status');
-        status.textContent = 'Сохранено';
-        setTimeout(() => status.textContent = '', 2000);
-      } catch (err) {
-        console.error('Save failed:', err);
+        console.log('[saveDriver] parsed JSON:', data);
+        if (data.status === 'ok') {
+          const status = document.getElementById('driver-save-status');
+          status.textContent = 'Сохранено';
+          setTimeout(()=> status.textContent = '', 2000);
+        } else {
+          throw new Error('Статус != ok: ' + JSON.stringify(data));
+        }
+      } catch(err) {
+        console.error('[saveDriver] ошибка:', err);
         alert('Ошибка сохранения:\n' + err.message);
       }
     }
