@@ -7,9 +7,10 @@
   <link rel="stylesheet" href="style.css">
   <style>
     main { padding:24px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { padding:8px; border:1px solid #ccc; text-align:left; }
+    table { width:100%; border-collapse: collapse; margin-bottom: 32px; }
+    th, td { padding:8px; border:1px solid #ccc; text-align:left; vertical-align: middle; }
     button { padding:4px 8px; border:none; border-radius:4px; background:#ff6961; color:#fff; cursor:pointer; }
+    img.avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; }
   </style>
 </head>
 <body>
@@ -17,7 +18,9 @@
     <button class="small-button btn-back" onclick="location.href='/'">← Назад</button>
     <div class="city">Админ‑панель</div>
   </header>
+
   <main>
+    <!-- Секция заявок -->
     <h2>Все заявки</h2>
     <table id="orders-table">
       <thead>
@@ -27,9 +30,27 @@
       </thead>
       <tbody></tbody>
     </table>
+
+    <!-- Секция водителей -->
+    <h2>Список водителей</h2>
+    <table id="drivers-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Telegram ID</th><th>Имя</th><th>Город</th><th>Аватар</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </main>
+
   <script>
+    // Загрузка обоих списков
     function loadAdmin() {
+      loadOrders();
+      loadDrivers();
+    }
+
+    function loadOrders() {
       fetch('/api/orders')
         .then(r=>r.json())
         .then(data=>{
@@ -54,10 +75,30 @@
     }
 
     function confirmDelete(i) {
-      if (confirm('Вы уверены, что хотите удалить эту заявку?')) {
-        fetch(`/api/orders/${i}`, { method:'DELETE' })
-          .then(res => { if (res.ok) loadAdmin(); });
-      }
+      if (!confirm('Вы уверены, что хотите удалить эту заявку?')) return;
+      fetch(`/api/orders/${i}`, { method:'DELETE' })
+        .then(res=>{ if(res.ok) loadOrders(); });
+    }
+
+    function loadDrivers() {
+      fetch('/api/drivers')
+        .then(r=>r.json())
+        .then(data=>{
+          const tbody = document.querySelector('#drivers-table tbody');
+          if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="5">Нет водителей</td></tr>';
+            return;
+          }
+          tbody.innerHTML = data.map((d,i)=>`
+            <tr>
+              <td>${i+1}</td>
+              <td>${d.tg_id}</td>
+              <td>${d.name}</td>
+              <td>${d.city}</td>
+              <td>${d.avatar ? `<img src="${d.avatar}" class="avatar">` : ''}</td>
+            </tr>
+          `).join('');
+        });
     }
 
     document.addEventListener('DOMContentLoaded', loadAdmin);
