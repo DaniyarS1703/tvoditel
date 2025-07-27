@@ -6,10 +6,10 @@ import telebot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
 # Настройки
-TELEGRAM_TOKEN = "7943726818:AAFwDFEewyqOtVQGjzb5Uavzd7XhG1KCJcA"
-WEBHOOK_SECRET = "tvoditel-secret"
-APP_URL = "https://tvoditel.onrender.com"
-ORDERS_FILE = 'orders.json'
+TELEGRAM_TOKEN  = "7943726818:AAFwDFEewyqOtVQGjzb5Uavzd7XhG1KCJcA"
+WEBHOOK_SECRET  = "tvoditel-secret"
+APP_URL         = "https://tvoditel.onrender.com"
+ORDERS_FILE     = 'orders.json'
 
 # Инициализация
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
@@ -18,34 +18,22 @@ CORS(app)
 
 # WebApp‑страницы
 @app.route('/')
-def index():
-    return send_from_directory('.', 'index.html')
-
+def index():       return send_from_directory('.', 'index.html')
 @app.route('/style.css')
-def style():
-    return send_from_directory('.', 'style.css')
-
+def style():       return send_from_directory('.', 'style.css')
 @app.route('/order')
-def order_page():
-    return send_from_directory('.', 'order.html')
-
+def order_page():   return send_from_directory('.', 'order.html')
 @app.route('/list')
-def list_page():
-    return send_from_directory('.', 'list.html')
-
+def list_page():    return send_from_directory('.', 'list.html')
 @app.route('/client')
-def client_page():
-    return send_from_directory('.', 'client.html')
-
+def client_page():  return send_from_directory('.', 'client.html')
 @app.route('/driver')
-def driver_page():
-    return send_from_directory('.', 'driver.html')
+def driver_page():  return send_from_directory('.', 'driver.html')
 
 # Обработка формы заказа и сохранение
 @app.route('/submit', methods=['POST'])
 def submit_order():
     order = {k: request.form.get(k) for k in ('name','phone','car_model','route','price','city')}
-    # Читаем старые заявки
     orders = []
     if os.path.exists(ORDERS_FILE):
         try:
@@ -53,7 +41,6 @@ def submit_order():
                 orders = json.load(f)
         except:
             orders = []
-    # Добавляем новую и сохраняем
     orders.append(order)
     with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
         json.dump(orders, f, ensure_ascii=False, indent=2)
@@ -65,9 +52,23 @@ def submit_order():
 def api_orders():
     if os.path.exists(ORDERS_FILE):
         with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return jsonify(data)
+            return jsonify(json.load(f))
     return jsonify([])
+
+# API для удаления заявки по индексу
+@app.route('/api/orders/<int:idx>', methods=['DELETE'])
+def delete_order(idx):
+    if os.path.exists(ORDERS_FILE):
+        with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
+            orders = json.load(f)
+    else:
+        orders = []
+    if 0 <= idx < len(orders):
+        orders.pop(idx)
+        with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(orders, f, ensure_ascii=False, indent=2)
+        return '', 200
+    return 'Not Found', 404
 
 # Telegram Webhook
 @app.route(f'/{WEBHOOK_SECRET}', methods=['POST'])

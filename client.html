@@ -10,13 +10,49 @@
     .profile input { display:block; width:100%; margin-bottom:12px; padding:10px; border-radius:8px; border:1px solid #ccc; }
     .profile button { padding:12px; border:none; border-radius:12px; background:#ffe680; cursor:pointer; }
     .save-status { color:green; margin-top:8px; height:18px; }
-    .order-item { margin-bottom:8px; }
+    .order-item { 
+      padding:12px; margin-bottom:8px; border-radius:12px; background:#fffbea;
+      box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    }
+    .order-item button {
+      float:right; background:transparent; border:none; font-size:16px; cursor:pointer;
+    }
   </style>
   <script>
     function saveProfile() {
       document.getElementById('save-status').textContent = 'Сохранено';
       setTimeout(()=>document.getElementById('save-status').textContent = '', 2000);
     }
+
+    function loadOrders() {
+      fetch('/api/orders')
+        .then(res=>res.json())
+        .then(data=>{
+          const container = document.getElementById('client-orders');
+          if(!data.length) {
+            container.innerHTML = '<p>Нет заказов.</p>';
+            return;
+          }
+          container.innerHTML = data.map((o,i)=>`
+            <div class="order-item">
+              <button onclick="deleteOrder(${i})">✕</button>
+              <strong>${o.name}</strong> (${o.phone})<br>
+              ${o.car_model} — ${o.route}<br>
+              <em>${o.price} ₸</em>
+            </div>
+          `).join('');
+        });
+    }
+
+    function deleteOrder(idx) {
+      fetch(`/api/orders/${idx}`, {method:'DELETE'})
+        .then(res=>{
+          if(res.ok) loadOrders();
+          else alert('Ошибка удаления');
+        });
+    }
+
+    window.onload = loadOrders;
   </script>
 </head>
 <body>
@@ -35,7 +71,7 @@
     </div>
     <div class="orders">
       <h2>Мои заказы</h2>
-      <div id="client-orders"><p>Нет заказов.</p></div>
+      <div id="client-orders"><p>Загрузка…</p></div>
     </div>
   </main>
 </body>
