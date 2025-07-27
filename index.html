@@ -7,18 +7,17 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    // Сохраняем initDataUnsafe
-    if (tg.initDataUnsafe) {
-      localStorage.setItem('tg_init', JSON.stringify(tg.initDataUnsafe));
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const uid = params.get('user_id');
+      if (uid) {
+        localStorage.setItem('tg_user_id', uid);
+      }
+    });
+
     function openDriver() {
-      // Берём initData: сначала из tg, иначе из localStorage
-      const init = tg.initDataUnsafe || JSON.parse(localStorage.getItem('tg_init') || '{}');
-      const safe = encodeURIComponent(JSON.stringify({ user: init.user }));
-      // Открываем с параметром init
-      tg.openLink(`${location.origin}/driver?init=${safe}`);
+      const uid = localStorage.getItem('tg_user_id') || '';
+      window.Telegram.WebApp.openLink(`/driver?user_id=${uid}`);
     }
   </script>
 </head>

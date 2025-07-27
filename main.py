@@ -57,7 +57,7 @@ def admin_page():
 def avatars(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# Обработка формы заказа (без изменений)
+# Обработка формы заказа
 @app.route('/submit', methods=['POST'])
 def submit_order():
     frm = request.form.get('route_from')
@@ -80,7 +80,7 @@ def submit_order():
         json.dump(orders, f, ensure_ascii=False, indent=2)
     return "Спасибо, заявка принята!"
 
-# API для заявок (без изменений)
+# API для заявок
 @app.route('/api/orders')
 def api_orders():
     if os.path.exists(ORDERS_FILE):
@@ -108,8 +108,6 @@ def register_driver():
     name  = request.form.get('name')
     city  = request.form.get('city')
     data = {'tg_id': tg_id, 'name': name, 'city': city}
-
-    # Сохраняем аватар
     if 'avatar' in request.files:
         f = request.files['avatar']
         ext = f.filename.rsplit('.',1)[-1].lower()
@@ -117,7 +115,6 @@ def register_driver():
             fn = secure_filename(f"{tg_id}.{ext}")
             f.save(os.path.join(app.config['UPLOAD_FOLDER'], fn))
             data['avatar'] = f"/avatars/{fn}"
-
     drivers = []
     if os.path.exists(DRIVERS_FILE):
         with open(DRIVERS_FILE, 'r', encoding='utf-8') as f:
@@ -136,7 +133,7 @@ def get_drivers():
             except: pass
     return jsonify([])
 
-# Telegram Webhook и /start
+# Telegram Webhook
 @app.route(f'/{WEBHOOK_SECRET}', methods=['POST'])
 def webhook():
     if request.headers.get('content-type') == 'application/json':
@@ -145,14 +142,18 @@ def webhook():
         return '',200
     return 'Unsupported Media Type',415
 
+# /start с WebAppInfo, передаём user_id
 @bot.message_handler(commands=['start'])
 def start(message):
+    user_id = message.from_user.id
+    url = f"{APP_URL}?user_id={user_id}"
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    wb = WebAppInfo(url=APP_URL)
-    kb.add(KeyboardButton("Открыть мини‑приложение", web_app=wb))
-    bot.send_message(message.chat.id,
+    kb.add(KeyboardButton("Открыть мини‑приложение", web_app=WebAppInfo(url=url)))
+    bot.send_message(
+        message.chat.id,
         "Добро пожаловать! Нажмите кнопку для открытия приложения:",
-        reply_markup=kb)
+        reply_markup=kb
+    )
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT',5000))

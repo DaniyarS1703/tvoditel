@@ -5,11 +5,9 @@
   <title>ЛК Водителя</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    .profile, .status, .orders, #debug { padding:24px; }
-    #debug { background:#f9f9f9; border:1px solid #ccc; margin-bottom:16px; }
+    .profile, .status, .orders { padding:24px; }
     .profile img { width:80px; height:80px; border-radius:50%; margin-bottom:12px; object-fit:cover; }
     .profile input, .profile button { display:block; width:100%; margin-bottom:12px; padding:10px; border-radius:8px; border:1px solid #ccc; }
     .profile button { border:none; background:#ffe680; cursor:pointer; }
@@ -24,12 +22,6 @@
   </header>
 
   <main>
-    <!-- Отладочное окно -->
-    <div id="debug">
-      <h3>Отладка WebApp данных</h3>
-      <pre id="debug-text">Загрузка...</pre>
-    </div>
-
     <div class="profile">
       <h2>Регистрация водителя</h2>
       <img id="avatar-img" src="https://via.placeholder.com/80" alt="Аватар">
@@ -54,47 +46,34 @@
   </main>
 
   <script>
-    const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg) tg.expand();
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.expand();
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Получаем данные из SDK и localStorage
-      const initUnsafe = (tg && tg.initDataUnsafe) || null;
-      const storedRaw  = localStorage.getItem('tg_init') || '';
-      let stored = null;
-      try { stored = storedRaw && JSON.parse(storedRaw); } catch {}
-
-      // Выводим в окно отладки
-      document.getElementById('debug-text').innerText =
-        'tg.initDataUnsafe:\n' + JSON.stringify(initUnsafe, null, 2) +
-        '\n\nlocalStorage[tg_init]:\n' + (storedRaw || '— пусто —');
-
-      // Определяем ID
-      const sdkUser = initUnsafe && initUnsafe.user;
-      let id = (sdkUser && sdkUser.id) || (stored && stored.user && stored.user.id) || '';
-      if (!id) {
-        id = '1234567890'; // тестовый fallback
-        console.warn('Не удалось получить реальный ID, использован тестовый:', id);
+      // Читаем user_id из URL или из localStorage
+      const params = new URLSearchParams(window.location.search);
+      let uid = params.get('user_id') || localStorage.getItem('tg_user_id') || '';
+      if (!uid) {
+        uid = '1234567890';  // последний fallback
       }
-      document.getElementById('driver-id').value = id;
+      document.getElementById('driver-id').value = uid;
 
       loadDriverOrders();
     });
 
     function loadDriverOrders() {
-      fetch('/api/orders')
-        .then(r => r.json())
-        .then(data => {
-          const c = document.getElementById('driver-orders');
-          if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
-          c.innerHTML = data.map(o => `
-            <div class="order-item">
-              <strong>${o.name}</strong> (${o.phone})<br>
-              ${o.car_model} — ${o.route}<br>
-              <em>${o.price} ₸</em>
-            </div>
-          `).join('');
-        });
+      fetch('/api/orders').then(r=>r.json()).then(data=>{
+        const c = document.getElementById('driver-orders');
+        if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
+        c.innerHTML = data.map(o=>`
+          <div class="order-item">
+            <strong>${o.name}</strong> (${o.phone})<br>
+            ${o.car_model} — ${o.route}<br>
+            <em>${o.price} ₸</em>
+          </div>
+        `).join('');
+      });
     }
 
     function previewAvatar(e) {
@@ -112,13 +91,12 @@
       if (file) form.append('avatar', file);
 
       fetch('/api/drivers', { method:'POST', body: form })
-        .then(res => res.json())
-        .then(() => {
+        .then(res=>res.json()).then(()=>{
           const status = document.getElementById('driver-save-status');
           status.textContent = 'Сохранено';
-          setTimeout(() => status.textContent = '', 2000);
+          setTimeout(()=>status.textContent = '', 2000);
         })
-        .catch(() => alert('Ошибка сохранения'));
+        .catch(()=> alert('Ошибка сохранения'));
     }
   </script>
 </body>
