@@ -5,26 +5,32 @@
   <title>Трезвый водитель</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-  <!-- Хедер -->
   <header class="header">
     <div class="city">Алматы</div>
-    <a href="/client"><button class="btn-profile">ЛК</button></a>
+    <button class="btn-profile">ЛК</button>
   </header>
 
-  <!-- Основные действия -->
   <main class="main">
     <a href="/list"><button class="big-button btn-ads">📋 Объявления</button></a>
     <a href="/order"><button class="big-button btn-order">🚗 Заказать трезвого водителя</button></a>
+    <a href="/driver"><button class="big-button btn-driver">Я — водитель</button></a>
   </main>
 
-  <!-- Нижняя панель -->
   <footer class="footer">
-    <a href="/driver"><button class="small-button btn-driver">Я — водитель</button></a>
-    <a href="/"><button class="small-button btn-exit">Выйти</button></a>
+    <button class="small-button btn-exit">Выйти</button>
   </footer>
 
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    // Сохраняем initDataUnsafe в localStorage
+    if (tg.initDataUnsafe) {
+      localStorage.setItem('tg_init', JSON.stringify(tg.initDataUnsafe));
+    }
+  </script>
 </body>
 </html>
