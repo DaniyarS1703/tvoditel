@@ -45,7 +45,6 @@ def avatars(filename):
 # Обработка формы заказа
 @app.route('/submit', methods=['POST'])
 def submit_order():
-    # ... ваш код для заказов без изменений ...
     frm = request.form.get('route_from')
     to  = request.form.get('route_to')
     order = {
@@ -76,7 +75,6 @@ def api_orders():
 
 @app.route('/api/orders/<int:idx>', methods=['DELETE'])
 def delete_order(idx):
-    # ... ваш код для удаления заказа без изменений ...
     orders = []
     if os.path.exists(ORDERS_FILE):
         with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
@@ -87,8 +85,6 @@ def delete_order(idx):
             json.dump(orders, f, ensure_ascii=False, indent=2)
         return '', 200
     return 'Not Found', 404
-
-# === Вот что нужно добавить ===
 
 # Регистрация водителей (POST)
 @app.route('/api/drivers', methods=['POST'])
@@ -127,16 +123,28 @@ def get_drivers():
         return jsonify(data)
     return jsonify([])
 
-# === Конец добавления ===
+# Удаление водителя (DELETE)
+@app.route('/api/drivers/<int:idx>', methods=['DELETE'])
+def delete_driver(idx):
+    drivers = []
+    if os.path.exists(DRIVERS_FILE):
+        with open(DRIVERS_FILE, 'r', encoding='utf-8') as f:
+            drivers = json.load(f)
+    if 0 <= idx < len(drivers):
+        drivers.pop(idx)
+        with open(DRIVERS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(drivers, f, ensure_ascii=False, indent=2)
+        return '', 200
+    return 'Not Found', 404
 
-# Telegram Webhook и /start (без изменений)
+# Telegram Webhook и /start
 @app.route(f'/{WEBHOOK_SECRET}', methods=['POST'])
 def webhook():
-    if request.headers.get('content-type')=='application/json':
+    if request.headers.get('content-type') == 'application/json':
         update = telebot.types.Update.de_json(request.get_data().decode('utf-8'))
         bot.process_new_updates([update])
-        return '',200
-    return 'Unsupported Media Type',415
+        return '', 200
+    return 'Unsupported Media Type', 415
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -145,10 +153,12 @@ def start(message):
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
     wb = WebAppInfo(url=webapp_url)
     kb.add(KeyboardButton("Открыть мини‑приложение", web_app=wb))
-    bot.send_message(message.chat.id,
-                     "Добро пожаловать! Нажмите кнопку для открытия приложения:",
-                     reply_markup=kb)
+    bot.send_message(
+        message.chat.id,
+        "Добро пожаловать! Нажмите кнопку для открытия приложения:",
+        reply_markup=kb
+    )
 
-if __name__=='__main__':
-    port = int(os.environ.get('PORT',5000))
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
