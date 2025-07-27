@@ -1,37 +1,45 @@
 import os
-from flask import Flask, send_from_directory, request
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 import telebot
+import threading
 
-# Настройки
+# Токен бота (можно переделать на переменные окружения позже)
 TELEGRAM_TOKEN = "7943726818:AAFwDFEewyqOtVQGjzb5Uavzd7XhG1KCJcA"
-bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
+# Инициализация Flask
 app = Flask(__name__)
 CORS(app)
 
-# 📄 Отдаём index.html
+# Главная страница
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
 
-# 📄 Отдаём style.css
+# Статический файл (CSS)
 @app.route('/style.css')
-def css():
+def style():
     return send_from_directory('.', 'style.css')
 
-# 🔔 Telegram-бот: старт
+# Инициализация бота
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
+
+# Простой хендлер
 @bot.message_handler(commands=['start'])
-def handle_start(message):
-    bot.send_message(message.chat.id, "Добро пожаловать в мини-приложение 'Трезвый водитель'!")
+def send_welcome(message):
+    bot.send_message(message.chat.id, "Привет! Это мини-приложение 'Трезвый водитель' 🚘")
 
-# Запуск Flask и Telegram бота
-if __name__ == '__main__':
-    import threading
+# Запуск бота в отдельном потоке, безопасно
+def run_bot():
+    try:
+        bot.infinity_polling(timeout=10, long_polling_timeout = 5)
+    except Exception as e:
+        print(f"[ОШИБКА БОТА] {e}")
 
-    def run_bot():
-        bot.polling(none_stop=True)
+# Стартуем бот в фоне
+threading.Thread(target=run_bot).start()
 
-    threading.Thread(target=run_bot).start()
-
-    app.run(debug=True, port=5000)
+# Запуск Flask-приложения
+if __name__ == "__main__":
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
