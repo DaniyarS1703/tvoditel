@@ -5,6 +5,7 @@
   <title>ЛК Водителя</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="style.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     .profile, .status, .orders { padding:24px; }
     .profile img { width:80px; height:80px; border-radius:50%; margin-bottom:12px; object-fit:cover; }
@@ -14,9 +15,11 @@
     .order-item { padding:12px; margin-bottom:8px; border-radius:12px; background:#e0ffe0; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
   </style>
   <script>
+    const tg = window.Telegram.WebApp;
+
     function previewAvatar(e) {
       const reader = new FileReader();
-      reader.onload = ()=> document.getElementById('avatar-img').src = reader.result;
+      reader.onload = () => document.getElementById('avatar-img').src = reader.result;
       reader.readAsDataURL(e.target.files[0]);
     }
 
@@ -31,9 +34,11 @@
       fetch('/api/drivers', { method:'POST', body: form })
         .then(res=>res.json())
         .then(()=>{
-          document.getElementById('driver-save-status').textContent = 'Сохранено';
-          setTimeout(()=>document.getElementById('driver-save-status').textContent = '', 2000);
-        });
+          const status = document.getElementById('driver-save-status');
+          status.textContent = 'Сохранено';
+          setTimeout(()=>status.textContent = '', 2000);
+        })
+        .catch(()=> alert('Ошибка сохранения'));
     }
 
     function loadDriverOrders() {
@@ -41,7 +46,7 @@
         .then(res=>res.json())
         .then(data=>{
           const c = document.getElementById('driver-orders');
-          if(!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
+          if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
           c.innerHTML = data.map(o=>`
             <div class="order-item">
               <strong>${o.name}</strong> (${o.phone})<br>
@@ -52,8 +57,14 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', ()=>{
+    document.addEventListener('DOMContentLoaded', ()=> {
+      // автозаполнение ID из Telegram
+      const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      if (user && user.id) {
+        document.getElementById('driver-id').value = user.id;
+      }
       loadDriverOrders();
+      tg.expand();
     });
   </script>
 </head>
@@ -67,7 +78,7 @@
       <h2>Регистрация водителя</h2>
       <img id="avatar-img" src="https://via.placeholder.com/80" alt="Аватар">
       <input id="driver-avatar" type="file" accept="image/*" onchange="previewAvatar(event)">
-      <input id="driver-id"     type="text" placeholder="Telegram ID">
+      <input id="driver-id"     type="text" placeholder="Telegram ID" readonly>
       <input id="driver-name"   type="text" placeholder="Имя">
       <input id="driver-city"   type="text" placeholder="Город" value="Алматы">
       <button onclick="saveDriver()">Сохранить</button>
