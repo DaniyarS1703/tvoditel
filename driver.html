@@ -14,9 +14,20 @@
     .order-item { padding:12px; margin-bottom:8px; border-radius:12px; background:#e0ffe0; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
   </style>
   <script>
-    function saveProfile() {
-      document.getElementById('driver-save-status').textContent = 'Сохранено';
-      setTimeout(()=>document.getElementById('driver-save-status').textContent = '', 2000);
+    function saveDriver() {
+      const tgId = document.getElementById('driver-id').value.trim();
+      const name = document.getElementById('driver-name').value.trim();
+      const city = document.getElementById('driver-city').value.trim();
+      fetch('/api/drivers', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ tg_id: tgId, name, city })
+      })
+      .then(res=>res.json())
+      .then(()=> {
+        document.getElementById('driver-save-status').textContent = 'Сохранено';
+        setTimeout(()=>document.getElementById('driver-save-status').textContent = '', 2000);
+      });
     }
 
     function loadDriverOrders() {
@@ -36,7 +47,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', ()=>{
-      document.getElementById('driver-city').value = 'Алматы';
       loadDriverOrders();
     });
   </script>
@@ -48,12 +58,12 @@
   </header>
   <main>
     <div class="profile">
-      <h2>Профиль</h2>
+      <h2>Регистрация водителя</h2>
       <img src="https://via.placeholder.com/80" alt="Аватар">
-      <input id="driver-name"   type="text" placeholder="Имя">
-      <input id="driver-id"     type="text" placeholder="Telegram ID" readonly>
-      <input id="driver-city"   type="text" placeholder="Город">
-      <button onclick="saveProfile()">Сохранить</button>
+      <input id="driver-id"   type="text" placeholder="Telegram ID">
+      <input id="driver-name" type="text" placeholder="Имя">
+      <input id="driver-city" type="text" placeholder="Город" value="Алматы">
+      <button onclick="saveDriver()">Сохранить</button>
       <div id="driver-save-status" class="save-status"></div>
     </div>
     <div class="status">

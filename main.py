@@ -10,8 +10,8 @@ TELEGRAM_TOKEN = "7943726818:AAFwDFEewyqOtVQGjzb5Uavzd7XhG1KCJcA"
 WEBHOOK_SECRET = "tvoditel-secret"
 APP_URL        = "https://tvoditel.onrender.com"
 ORDERS_FILE    = 'orders.json'
+DRIVERS_FILE   = 'drivers.json'
 
-# Инициализация
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 app = Flask(__name__)
 CORS(app)
@@ -61,10 +61,8 @@ def submit_order():
     orders = []
     if os.path.exists(ORDERS_FILE):
         with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
-            try:
-                orders = json.load(f)
-            except:
-                orders = []
+            try: orders = json.load(f)
+            except: orders = []
     orders.append(order)
     with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
         json.dump(orders, f, ensure_ascii=False, indent=2)
@@ -79,19 +77,43 @@ def api_orders():
             return jsonify(json.load(f))
     return jsonify([])
 
-# API для удаления заявки по индексу
+# API для удаления заявки
 @app.route('/api/orders/<int:idx>', methods=['DELETE'])
 def delete_order(idx):
-    orders = []
     if os.path.exists(ORDERS_FILE):
         with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
             orders = json.load(f)
+    else:
+        orders = []
     if 0 <= idx < len(orders):
         orders.pop(idx)
         with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
             json.dump(orders, f, ensure_ascii=False, indent=2)
         return '', 200
     return 'Not Found', 404
+
+# Регистрация водителей
+@app.route('/api/drivers', methods=['POST'])
+def register_driver():
+    data = request.get_json()
+    drivers = []
+    if os.path.exists(DRIVERS_FILE):
+        with open(DRIVERS_FILE, 'r', encoding='utf-8') as f:
+            try: drivers = json.load(f)
+            except: drivers = []
+    drivers.append(data)
+    with open(DRIVERS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(drivers, f, ensure_ascii=False, indent=2)
+    return jsonify({'status':'ok'})
+
+@app.route('/api/drivers', methods=['GET'])
+def get_drivers():
+    if os.path.exists(DRIVERS_FILE):
+        with open(DRIVERS_FILE, 'r', encoding='utf-8') as f:
+            try: drivers = json.load(f)
+            except: drivers = []
+        return jsonify(drivers)
+    return jsonify([])
 
 # Telegram Webhook
 @app.route(f'/{WEBHOOK_SECRET}', methods=['POST'])
@@ -102,7 +124,7 @@ def webhook():
         return '', 200
     return 'Unsupported Media Type', 415
 
-# Обработчик /start
+# /start с WebApp‑кнопкой
 @bot.message_handler(commands=['start'])
 def start(message):
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -114,7 +136,6 @@ def start(message):
         reply_markup=kb
     )
 
-# Запуск
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
