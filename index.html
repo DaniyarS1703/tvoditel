@@ -9,33 +9,32 @@
   <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
-    // Сохраняем initDataUnsafe для надёжности
+    // Сохраняем initDataUnsafe
     if (tg.initDataUnsafe) {
       localStorage.setItem('tg_init', JSON.stringify(tg.initDataUnsafe));
     }
-    // Открыть ЛК Водителя внутри WebApp
     function openDriver() {
-      tg.expand();
-      tg.openLink('/driver');
+      // Берём initData: сначала из tg, иначе из localStorage
+      const init = tg.initDataUnsafe || JSON.parse(localStorage.getItem('tg_init') || '{}');
+      const safe = encodeURIComponent(JSON.stringify({ user: init.user }));
+      // Открываем с параметром init
+      tg.openLink(`${location.origin}/driver?init=${safe}`);
     }
   </script>
 </head>
 <body>
 
-  <!-- Хедер -->
   <header class="header">
     <div class="city">Алматы</div>
     <button class="btn-profile">ЛК</button>
   </header>
 
-  <!-- Основные действия -->
   <main class="main">
     <a href="/list"><button class="big-button btn-ads">📋 Объявления</button></a>
     <a href="/order"><button class="big-button btn-order">🚗 Заказать трезвого водителя</button></a>
     <button class="big-button btn-driver" onclick="openDriver()">Я — водитель</button>
   </main>
 
-  <!-- Нижняя панель -->
   <footer class="footer">
     <button class="small-button btn-exit">Выйти</button>
   </footer>
