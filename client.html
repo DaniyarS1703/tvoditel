@@ -5,15 +5,38 @@
   <title>ЛК Клиента</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .profile, .orders { padding:24px; }
+    .profile input { display:block; width:100%; margin-bottom:12px; padding:10px; border-radius:8px; border:1px solid #ccc; }
+    .profile button { padding:12px; border:none; border-radius:12px; background:#ffe680; cursor:pointer; }
+    .save-status { color:green; margin-top:8px; height:18px; }
+    .order-item { margin-bottom:8px; }
+  </style>
+  <script>
+    function saveProfile() {
+      document.getElementById('save-status').textContent = 'Сохранено';
+      setTimeout(()=>document.getElementById('save-status').textContent = '', 2000);
+    }
+  </script>
 </head>
 <body>
   <header class="header">
     <button class="small-button btn-back" onclick="location.href='/'">← Назад</button>
     <div class="city">Алматы</div>
   </header>
-  <main style="padding:24px;">
-    <h2>Личный кабинет Клиента</h2>
-    <!-- сюда позже добавим профиль и «Мои заказы» -->
+  <main>
+    <div class="profile">
+      <h2>Профиль</h2>
+      <input id="name"   type="text" placeholder="Имя">
+      <input id="phone"  type="text" placeholder="Телефон">
+      <input id="city"   type="text" placeholder="Город" value="Алматы">
+      <button onclick="saveProfile()">Сохранить</button>
+      <div id="save-status" class="save-status"></div>
+    </div>
+    <div class="orders">
+      <h2>Мои заказы</h2>
+      <div id="client-orders"><p>Нет заказов.</p></div>
+    </div>
   </main>
 </body>
 </html>
