@@ -18,10 +18,12 @@ ALLOWED_EXT    = {'png','jpg','jpeg','gif'}
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 app = Flask(__name__)
 CORS(app)
+
+# Папка для аватарок
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Страницы
+# WebApp‑страницы
 @app.route('/')
 def index():     return send_from_directory('.', 'index.html')
 @app.route('/style.css')
@@ -40,9 +42,102 @@ def admin():     return send_from_directory('.', 'admin.html')
 def avatars(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# … остальные routes без изменений …
+# Обработка формы заказа
+@app.route('/submit', methods=['POST'])
+def submit_order():
+    # ... ваш код для заказов без изменений ...
+    frm = request.form.get('route_from')
+    to  = request.form.get('route_to')
+    order = {
+        'name':       request.form.get('name'),
+        'phone':      request.form.get('phone'),
+        'car_model':  request.form.get('car_model'),
+        'route':      f"{frm} → {to}",
+        'price':      request.form.get('price'),
+        'city':       request.form.get('city')
+    }
+    orders = []
+    if os.path.exists(ORDERS_FILE):
+        with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
+            try: orders = json.load(f)
+            except: orders = []
+    orders.append(order)
+    with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(orders, f, ensure_ascii=False, indent=2)
+    return "Спасибо, заявка принята!"
 
-# Главное изменение: /start передаёт user_id
+# API для списка заказов
+@app.route('/api/orders')
+def api_orders():
+    if os.path.exists(ORDERS_FILE):
+        with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
+            return jsonify(json.load(f))
+    return jsonify([])
+
+@app.route('/api/orders/<int:idx>', methods=['DELETE'])
+def delete_order(idx):
+    # ... ваш код для удаления заказа без изменений ...
+    orders = []
+    if os.path.exists(ORDERS_FILE):
+        with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
+            orders = json.load(f)
+    if 0 <= idx < len(orders):
+        orders.pop(idx)
+        with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(orders, f, ensure_ascii=False, indent=2)
+        return '', 200
+    return 'Not Found', 404
+
+# === Вот что нужно добавить ===
+
+# Регистрация водителей (POST)
+@app.route('/api/drivers', methods=['POST'])
+def register_driver():
+    tg_id = request.form.get('tg_id')
+    name  = request.form.get('name')
+    city  = request.form.get('city')
+    data  = {'tg_id': tg_id, 'name': name, 'city': city}
+
+    # Сохранение аватара (если есть)
+    if 'avatar' in request.files:
+        f = request.files['avatar']
+        ext = f.filename.rsplit('.',1)[-1].lower()
+        if ext in ALLOWED_EXT:
+            fn = secure_filename(f"{tg_id}.{ext}")
+            f.save(os.path.join(app.config['UPLOAD_FOLDER'], fn))
+            data['avatar'] = f"/avatars/{fn}"
+
+    drivers = []
+    if os.path.exists(DRIVERS_FILE):
+        with open(DRIVERS_FILE, 'r', encoding='utf-8') as f:
+            try: drivers = json.load(f)
+            except: drivers = []
+    drivers.append(data)
+    with open(DRIVERS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(drivers, f, ensure_ascii=False, indent=2)
+    return jsonify({'status':'ok'})
+
+# Получение списка водителей (GET)
+@app.route('/api/drivers', methods=['GET'])
+def get_drivers():
+    if os.path.exists(DRIVERS_FILE):
+        with open(DRIVERS_FILE, 'r', encoding='utf-8') as f:
+            try: data = json.load(f)
+            except: data = []
+        return jsonify(data)
+    return jsonify([])
+
+# === Конец добавления ===
+
+# Telegram Webhook и /start (без изменений)
+@app.route(f'/{WEBHOOK_SECRET}', methods=['POST'])
+def webhook():
+    if request.headers.get('content-type')=='application/json':
+        update = telebot.types.Update.de_json(request.get_data().decode('utf-8'))
+        bot.process_new_updates([update])
+        return '',200
+    return 'Unsupported Media Type',415
+
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
@@ -53,15 +148,6 @@ def start(message):
     bot.send_message(message.chat.id,
                      "Добро пожаловать! Нажмите кнопку для открытия приложения:",
                      reply_markup=kb)
-
-# Webhook
-@app.route(f'/{WEBHOOK_SECRET}', methods=['POST'])
-def webhook():
-    if request.headers.get('content-type')=='application/json':
-        update = telebot.types.Update.de_json(request.get_data().decode('utf-8'))
-        bot.process_new_updates([update])
-        return '',200
-    return 'Unsupported Media Type',415
 
 if __name__=='__main__':
     port = int(os.environ.get('PORT',5000))
