@@ -18,14 +18,32 @@
   <main>
     <form class="order-form" action="/submit" method="post">
       <input type="hidden" name="city" value="Алматы">
+      <input id="phone" name="phone" type="tel" placeholder="+7 (___) ___ __ __" required>
       <input type="text" name="name" placeholder="Имя" required>
-      <input type="text" name="phone" placeholder="Телефон" required>
       <input type="text" name="car_model" placeholder="Марка машины" required>
       <input type="text" name="route" placeholder="Маршрут" required>
       <input type="text" name="price" placeholder="Стоимость" required>
       <button type="submit">Отправить</button>
     </form>
   </main>
+
+  <script>
+    function formatPhone(el) {
+      let x = el.value.replace(/\D/g,'').substring(0,11);
+      let res = '+';
+      if (x.length > 0) res += x[0];
+      if (x.length > 1) res += ' (' + x.slice(1,4);
+      if (x.length >= 4) res += ') ' + x.slice(4,7);
+      if (x.length >= 7) res += ' ' + x.slice(7,9);
+      if (x.length >= 9) res += ' ' + x.slice(9,11);
+      el.value = res;
+    }
+    document.addEventListener('DOMContentLoaded', ()=> {
+      const phone = document.getElementById('phone');
+      phone.value = '+7 ';
+      phone.addEventListener('input', ()=> formatPhone(phone));
+    });
+  </script>
 
 </body>
 </html>
