@@ -1,0 +1,81 @@
+/* Общие стили */
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #fffaf4;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Хедер */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #d0f0ff;
+  padding: 12px 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border-bottom: 2px solid #aaa;
+}
+.city {
+  color: #007acc;
+}
+.btn-profile {
+  background-color: #fff;
+  border: 2px solid #007acc;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Основные кнопки */
+.main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+.big-button {
+  font-size: 18px;
+  padding: 20px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btn-ads {
+  background-color: #ffe680;
+}
+.btn-order {
+  background-color: #ffb6b6;
+}
+.big-button:active {
+  transform: scale(0.96);
+}
+
+/* Нижняя панель */
+.footer {
+  display: flex;
+  justify-content: space-around;
+  padding: 12px;
+  background-color: #f0f0f0;
+  border-top: 2px solid #ccc;
+}
+.small-button {
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  background-color: #ddd;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.small-button:active {
+  transform: scale(0.95);
+}
