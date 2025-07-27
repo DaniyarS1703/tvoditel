@@ -46,34 +46,34 @@
   </main>
 
   <script>
-    if (window.Telegram && window.Telegram.WebApp) {
+    // Сразу разворачиваем WebApp-iframe
+    if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.expand();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Читаем user_id из URL или из localStorage
+      // Читаем user_id из URL или localStorage
       const params = new URLSearchParams(window.location.search);
       let uid = params.get('user_id') || localStorage.getItem('tg_user_id') || '';
-      if (!uid) {
-        uid = '1234567890';  // последний fallback
-      }
-      document.getElementById('driver-id').value = uid;
+      document.getElementById('driver-id').value = uid || '1234567890';
 
       loadDriverOrders();
     });
 
     function loadDriverOrders() {
-      fetch('/api/orders').then(r=>r.json()).then(data=>{
-        const c = document.getElementById('driver-orders');
-        if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
-        c.innerHTML = data.map(o=>`
-          <div class="order-item">
-            <strong>${o.name}</strong> (${o.phone})<br>
-            ${o.car_model} — ${o.route}<br>
-            <em>${o.price} ₸</em>
-          </div>
-        `).join('');
-      });
+      fetch('/api/orders')
+        .then(r => r.json())
+        .then(data => {
+          const c = document.getElementById('driver-orders');
+          if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
+          c.innerHTML = data.map(o => `
+            <div class="order-item">
+              <strong>${o.name}</strong> (${o.phone})<br>
+              ${o.car_model} — ${o.route}<br>
+              <em>${o.price} ₸</em>
+            </div>
+          `).join('');
+        });
     }
 
     function previewAvatar(e) {
@@ -91,12 +91,13 @@
       if (file) form.append('avatar', file);
 
       fetch('/api/drivers', { method:'POST', body: form })
-        .then(res=>res.json()).then(()=>{
+        .then(res => res.json())
+        .then(() => {
           const status = document.getElementById('driver-save-status');
           status.textContent = 'Сохранено';
-          setTimeout(()=>status.textContent = '', 2000);
+          setTimeout(() => status.textContent = '', 2000);
         })
-        .catch(()=> alert('Ошибка сохранения'));
+        .catch(() => alert('Ошибка сохранения'));
     }
   </script>
 </body>

@@ -8,16 +8,18 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      // Сохраняем user_id, который передали боту в /start
       const params = new URLSearchParams(window.location.search);
       const uid = params.get('user_id');
-      if (uid) {
-        localStorage.setItem('tg_user_id', uid);
-      }
+      if (uid) localStorage.setItem('tg_user_id', uid);
     });
 
     function openDriver() {
       const uid = localStorage.getItem('tg_user_id') || '';
-      window.Telegram.WebApp.openLink(`/driver?user_id=${uid}`);
+      // Переходим внутри того же iframe WebApp
+      window.location.href = `/driver?user_id=${uid}`;
     }
   </script>
 </head>
@@ -31,7 +33,7 @@
   <main class="main">
     <a href="/list"><button class="big-button btn-ads">📋 Объявления</button></a>
     <a href="/order"><button class="big-button btn-order">🚗 Заказать трезвого водителя</button></a>
-    <button class="big-button btn-driver" onclick="openDriver()">Я — водитель</button>
+    <button class="big-button btn-driver" onclick="openDriver()">Я — водитель</button>
   </main>
 
   <footer class="footer">
