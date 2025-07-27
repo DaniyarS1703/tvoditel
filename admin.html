@@ -47,15 +47,19 @@
               <td>${o.route}</td>
               <td>${o.price} ₸</td>
               <td>${o.city}</td>
-              <td><button onclick="deleteOrder(${i})">Удалить</button></td>
+              <td><button onclick="confirmDelete(${i})">Удалить</button></td>
             </tr>
           `).join('');
         });
     }
-    function deleteOrder(i) {
-      fetch(`/api/orders/${i}`, { method:'DELETE' })
-        .then(res=>{ if(res.ok) loadAdmin(); });
+
+    function confirmDelete(i) {
+      if (confirm('Вы уверены, что хотите удалить эту заявку?')) {
+        fetch(`/api/orders/${i}`, { method:'DELETE' })
+          .then(res => { if (res.ok) loadAdmin(); });
+      }
     }
+
     document.addEventListener('DOMContentLoaded', loadAdmin);
   </script>
 </body>
