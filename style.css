@@ -1,4 +1,4 @@
-/* Общие стили */
+/* === Общие стили === */
 body {
   font-family: sans-serif;
   margin: 0;
@@ -9,7 +9,7 @@ body {
   min-height: 100vh;
 }
 
-/* Хедер */
+/* === Хедер === */
 .header {
   display: flex;
   justify-content: space-between;
@@ -32,7 +32,7 @@ body {
   cursor: pointer;
 }
 
-/* Основные кнопки */
+/* === Основные кнопки на index.html === */
 .main {
   flex-grow: 1;
   display: flex;
@@ -59,7 +59,7 @@ body {
   transform: scale(0.96);
 }
 
-/* Нижняя панель */
+/* === Нижняя панель на index.html === */
 .footer {
   display: flex;
   justify-content: space-around;
@@ -78,4 +78,37 @@ body {
 }
 .small-button:active {
   transform: scale(0.95);
+}
+
+/* === Кнопка "Назад" на order.html === */
+.small-button.btn-back {
+  background-color: #fff;
+  border: 2px solid #007acc;
+}
+
+/* === Стили для формы заказа === */
+.order-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+}
+.order-form input {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+}
+.order-form button {
+  padding: 16px;
+  font-size: 18px;
+  border: none;
+  border-radius: 16px;
+  background-color: #ffb6b6;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.order-form button:active {
+  transform: scale(0.96);
 }

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Заказать трезвого водителя</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Хедер -->
+  <header class="header">
+    <button class="small-button btn-back" onclick="location.href='/'">← Назад</button>
+    <div class="city">Алматы</div>
+  </header>
+
+  <!-- Форма заказа -->
+  <main>
+    <form class="order-form" action="/submit" method="post">
+      <input type="hidden" name="city" value="Алматы">
+      <input type="text" name="name" placeholder="Имя" required>
+      <input type="text" name="phone" placeholder="Телефон" required>
+      <input type="text" name="car_model" placeholder="Марка машины" required>
+      <input type="text" name="route" placeholder="Маршрут" required>
+      <input type="text" name="price" placeholder="Стоимость" required>
+      <button type="submit">Отправить</button>
+    </form>
+  </main>
+
+</body>
+</html>
