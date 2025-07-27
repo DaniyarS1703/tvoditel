@@ -92,7 +92,12 @@ def register_driver():
     tg_id = request.form.get('tg_id')
     name  = request.form.get('name')
     city  = request.form.get('city')
-    data  = {'tg_id': tg_id, 'name': name, 'city': city}
+    data  = {
+        'tg_id': tg_id,
+        'name': name,
+        'city': city,
+        'status': 'active'  # Статус по умолчанию
+    }
 
     # Сохранение аватара (если есть)
     if 'avatar' in request.files:
@@ -135,6 +140,23 @@ def delete_driver(idx):
         with open(DRIVERS_FILE, 'w', encoding='utf-8') as f:
             json.dump(drivers, f, ensure_ascii=False, indent=2)
         return '', 200
+    return 'Not Found', 404
+
+# Смена статуса водителя (PUT)
+@app.route('/api/drivers/<int:idx>/status', methods=['PUT'])
+def set_driver_status(idx):
+    status = request.json.get('status')
+    if not status:
+        return jsonify({'error':'no status'}), 400
+    drivers = []
+    if os.path.exists(DRIVERS_FILE):
+        with open(DRIVERS_FILE, 'r', encoding='utf-8') as f:
+            drivers = json.load(f)
+    if 0 <= idx < len(drivers):
+        drivers[idx]['status'] = status
+        with open(DRIVERS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(drivers, f, ensure_ascii=False, indent=2)
+        return jsonify({'status':'ok'})
     return 'Not Found', 404
 
 # Telegram Webhook и /start

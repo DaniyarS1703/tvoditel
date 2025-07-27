@@ -13,7 +13,7 @@
     main { padding:24px; }
     table { width:100%; border-collapse: collapse; margin-top:16px; }
     th, td { padding:8px; border:1px solid #ccc; text-align:left; }
-    button { padding:4px 8px; border:none; border-radius:4px; background:#ff6961; color:#fff; cursor:pointer; }
+    button { padding:4px 8px; border:none; border-radius:4px; background:#ff6961; color:#fff; cursor:pointer; margin-bottom:2px; }
     img.avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; }
   </style>
 </head>
@@ -47,7 +47,7 @@
       <table id="drivers-table">
         <thead>
           <tr>
-            <th>#</th><th>Telegram ID</th><th>Имя</th><th>Город</th><th>Аватар</th><th>Действия</th>
+            <th>#</th><th>Telegram ID</th><th>Имя</th><th>Город</th><th>Аватар</th><th>Статус</th><th>Действия</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -90,15 +90,32 @@
     function loadDrivers() {
       fetch('/api/drivers').then(r=>r.json()).then(data=>{
         const t = document.querySelector('#drivers-table tbody');
-        if (!data.length) return t.innerHTML = '<tr><td colspan="6">Нет водителей</td></tr>';
+        if (!data.length) return t.innerHTML = '<tr><td colspan="7">Нет водителей</td></tr>';
         t.innerHTML = data.map((d,i)=>`
           <tr>
             <td>${i+1}</td><td>${d.tg_id}</td><td>${d.name}</td><td>${d.city}</td>
             <td>${d.avatar?`<img src="${d.avatar}" class="avatar">`:''}</td>
-            <td><button onclick="confirmDeleteDriver(${i})">Удалить</button></td>
+            <td>
+              <span style="color:${d.status==='active'?'green':'#aaa'}">${d.status==='active'?'Активен':'Неактивен'}</span>
+            </td>
+            <td>
+              <button onclick="toggleDriverStatus(${i},'${d.status}')">
+                ${d.status==='active'?'Деактивировать':'Активировать'}
+              </button>
+              <button onclick="confirmDeleteDriver(${i})">Удалить</button>
+            </td>
           </tr>
         `).join('');
       });
+    }
+
+    function toggleDriverStatus(idx, status) {
+      const newStatus = status === 'active' ? 'inactive' : 'active';
+      fetch(`/api/drivers/${idx}/status`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({status: newStatus})
+      }).then(r=>r.ok && loadDrivers());
     }
 
     function confirmDeleteDriver(i) {
