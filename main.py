@@ -3,11 +3,10 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS
 import telebot
 import threading
+import time
 
-# Токен бота (можно переделать на переменные окружения позже)
 TELEGRAM_TOKEN = "7943726818:AAFwDFEewyqOtVQGjzb5Uavzd7XhG1KCJcA"
 
-# Инициализация Flask
 app = Flask(__name__)
 CORS(app)
 
@@ -16,30 +15,31 @@ CORS(app)
 def index():
     return send_from_directory('.', 'index.html')
 
-# Статический файл (CSS)
+# Стили
 @app.route('/style.css')
 def style():
     return send_from_directory('.', 'style.css')
 
-# Инициализация бота
+# Бот
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
-# Простой хендлер
 @bot.message_handler(commands=['start'])
-def send_welcome(message):
+def welcome(message):
     bot.send_message(message.chat.id, "Привет! Это мини-приложение 'Трезвый водитель' 🚘")
 
-# Запуск бота в отдельном потоке, безопасно
+# Защита от падения polling
 def run_bot():
-    try:
-        bot.infinity_polling(timeout=10, long_polling_timeout = 5)
-    except Exception as e:
-        print(f"[ОШИБКА БОТА] {e}")
+    while True:
+        try:
+            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+        except Exception as e:
+            print(f"[Bot Error] {e}")
+            time.sleep(5)
 
-# Стартуем бот в фоне
+# Запуск в фоне
 threading.Thread(target=run_bot).start()
 
-# Запуск Flask-приложения
+# Запуск Flask
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
