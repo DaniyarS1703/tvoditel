@@ -16,9 +16,26 @@
       font-size: 1.46em;
       font-weight: bold;
       color: #278ee2;
-      margin: 18px 0 18px 0;
+      margin: 18px 0 7px 0;
       text-align: center;
       letter-spacing: .01em;
+    }
+    .city-block {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.13em;
+      color: #389bf7;
+      font-weight: 600;
+      background: #e6f2fa;
+      border-radius: 14px;
+      padding: 5px 20px;
+      margin-bottom: 14px;
+      margin-top: 2px;
+      letter-spacing: .02em;
+      max-width: 210px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .order-card {
       background: #fff;
@@ -37,25 +54,22 @@
       background: #f6fbff;
       box-shadow: 0 3px 8px #278ee233;
     }
+    .order-head-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 7px;
+      gap: 16px;
+    }
     .order-head {
       display: flex;
       align-items: center;
-      margin-bottom: 6px;
       gap: 10px;
     }
     .order-client {
       font-weight: bold;
-      font-size: 1.11em;
+      font-size: 1.13em;
       color: #333;
-    }
-    .order-city {
-      font-size: 1em;
-      color: #389bf7;
-      font-weight: 500;
-      margin-left: auto;
-      background: #e6f2fa;
-      padding: 3px 13px;
-      border-radius: 13px;
     }
     .order-route {
       color: #485566;
@@ -72,8 +86,10 @@
     .order-price {
       color: #23ad3d;
       font-weight: bold;
-      font-size: 1.09em;
-      margin-bottom: 7px;
+      font-size: 1.12em;
+      margin-bottom: 0;
+      white-space: nowrap;
+      align-self: flex-start;
     }
     .order-comment {
       color: #858585;
@@ -156,6 +172,7 @@
   </header>
   <div class="list-container">
     <div class="list-title">Заказы клиентов</div>
+    <div class="city-block">Город: Алматы</div>
     <button class="refresh-btn" onclick="loadOrders()">Обновить</button>
     <div id="orders-list"></div>
   </div>
@@ -193,16 +210,17 @@
           }
           el.innerHTML = data.map((o,i)=>`
             <div class="order-card" data-idx="${i}">
-              <div class="order-head">
-                <span class="order-client">${o.name || 'Без имени'}</span>
-                <span class="order-city">${o.city || 'Город'}</span>
+              <div class="order-head-row">
+                <div class="order-head">
+                  <span class="order-client">${o.name || 'Без имени'}</span>
+                </div>
+                <div class="order-price">${o.price ? o.price+' ₸' : ''}</div>
               </div>
               <div class="order-route">
                 <span>Маршрут: </span>
                 <span style="font-weight:600;">${o.route || ''}</span>
               </div>
               <div class="order-car">${o.car_model ? 'Марка: '+o.car_model : ''}</div>
-              <div class="order-price">${o.price ? o.price+' ₸' : ''}</div>
               ${o.comment ? `<div class="order-comment">${o.comment}</div>` : ''}
               <div class="order-phone-block" style="display:none"></div>
             </div>
