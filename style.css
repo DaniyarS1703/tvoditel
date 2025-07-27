@@ -1,114 +1,141 @@
-/* === Общие стили === */
 body {
-  font-family: sans-serif;
+  background: #fff9f3;
   margin: 0;
-  padding: 0;
-  background-color: #fffaf4;
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #222;
 }
 
-/* === Хедер === */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #d0f0ff;
-  padding: 12px 16px;
-  font-size: 18px;
+  padding: 18px 16px 10px 16px;
+  background: #d4ecff;
   font-weight: bold;
-  border-bottom: 2px solid #aaa;
+  font-size: 1.22em;
+  border-bottom: 2px solid #bbe2fa;
 }
+
 .city {
-  color: #007acc;
+  color: #278ee2;
+  font-weight: bold;
+  font-size: 1.14em;
 }
+
 .btn-profile {
-  background-color: #fff;
-  border: 2px solid #007acc;
+  background: #fff;
+  border: 2px solid #bbe2fa;
   border-radius: 12px;
-  padding: 6px 12px;
-  font-size: 14px;
+  padding: 8px 18px;
+  font-weight: bold;
+  font-size: 1.08em;
   cursor: pointer;
+  box-shadow: 1px 1px 4px #aad0ff44;
+  transition: background .18s, box-shadow .18s;
 }
+.btn-profile:active { background: #f0f9ff; box-shadow: none; }
 
-/* === Основные кнопки на index.html === */
-.main {
-  flex-grow: 1;
+.main-toy {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
+  align-items: center;
+  padding: 34px 10px 0 10px;
+  min-height: 68vh;
+  box-sizing: border-box;
+  gap: 18px;
 }
-.big-button {
-  font-size: 18px;
-  padding: 20px;
+
+.toy-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15em;
+  font-weight: bold;
   border: none;
-  border-radius: 16px;
+  border-radius: 22px;
+  min-width: 220px;
+  min-height: 60px;
+  margin: 0 auto;
+  box-shadow: 0 4px 16px #0001, 0 2px 8px #fff5;
+  transition: box-shadow 0.16s, transform 0.1s, background 0.18s;
   cursor: pointer;
-  transition: transform 0.1s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  outline: none;
+  letter-spacing: .01em;
+  line-height: 1.13em;
+  padding: 10px 8px 7px 8px;
+  user-select: none;
 }
-.btn-ads {
-  background-color: #ffe680;
+.toy-btn span {
+  font-size: 1.6em;
+  margin-bottom: 2px;
 }
-.btn-order {
-  background-color: #ffb6b6;
-}
-.big-button:active {
+
+.toy-btn:active {
+  box-shadow: 0 2px 7px #0001;
+  background: #f8e9c3 !important;
   transform: scale(0.96);
 }
 
-/* === Нижняя панель на index.html === */
+.toy-ads {
+  background: #ffe47a;
+  color: #555;
+  border-radius: 20px 35px 18px 35px / 35px 20px 38px 18px;
+  min-height: 62px;
+  margin-bottom: 5px;
+}
+.toy-ads:active { background: #ffe49a !important; }
+
+.toy-order {
+  background: #ffc0c8;
+  color: #b92b49;
+  border-radius: 40px 22px 30px 20px / 22px 40px 20px 38px;
+  min-height: 62px;
+  margin-bottom: 12px;
+}
+.toy-order:active { background: #ffd5df !important; }
+
+.toy-btn-driver-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+}
+.toy-driver {
+  background: #d1e6ff;
+  color: #3475ac;
+  border-radius: 50px 18px 50px 28px / 20px 38px 38px 38px;
+  min-width: 240px;
+  min-height: 66px;
+  font-size: 1.13em;
+  box-shadow: 0 4px 18px #33aadd19, 0 2px 10px #fff8;
+  margin-bottom: 3px;
+}
+.toy-driver:active { background: #e2f3ff !important; }
+
+.toy-exit {
+  width: 90%;
+  background: #ededed;
+  color: #888;
+  font-size: 1.02em;
+  min-width: 0;
+  margin: 13px auto 8px auto;
+  border-radius: 18px;
+  padding: 12px 0 8px 0;
+  box-shadow: 0 2px 8px #aaa2;
+}
+.toy-exit:active { background: #f3f3f3 !important; }
+
 .footer {
+  padding: 7px 0 0 0;
+  background: #f2f6fa00;
   display: flex;
-  justify-content: space-around;
-  padding: 12px;
-  background-color: #f0f0f0;
-  border-top: 2px solid #ccc;
-}
-.small-button {
-  font-size: 14px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: none;
-  background-color: #ddd;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-}
-.small-button:active {
-  transform: scale(0.95);
+  justify-content: center;
+  border-top: none;
 }
 
-/* === Кнопка "Назад" на order.html === */
-.small-button.btn-back {
-  background-color: #fff;
-  border: 2px solid #007acc;
-}
-
-/* === Стили для формы заказа === */
-.order-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 24px;
-}
-.order-form input {
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 12px;
-  border: 2px solid #ccc;
-}
-.order-form button {
-  padding: 16px;
-  font-size: 18px;
-  border: none;
-  border-radius: 16px;
-  background-color: #ffb6b6;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-.order-form button:active {
-  transform: scale(0.96);
+@media (max-width: 420px) {
+  .toy-btn { min-width: 90vw; font-size: 1em; }
+  .toy-btn-driver-container { margin-top: 17px; }
 }

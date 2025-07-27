@@ -6,30 +6,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const params = new URLSearchParams(location.search);
-      const uid = params.get('user_id');
-      if (uid) localStorage.setItem('tg_user_id', uid);
-    });
-    function openDriver() {
-      const uid = localStorage.getItem('tg_user_id') || '';
-      location.href = `/driver?user_id=${uid}`;
-    }
-  </script>
 </head>
 <body>
   <header class="header">
     <div class="city">Алматы</div>
     <button class="btn-profile">ЛК</button>
   </header>
-  <main class="main">
-    <a href="/list"><button class="big-button btn-ads">📋 Объявления</button></a>
-    <a href="/order"><button class="big-button btn-order">🚗 Заказать трезвого водителя</button></a>
-    <button class="big-button btn-driver" onclick="openDriver()">Я — водитель</button>
+
+  <main class="main-toy">
+    <button class="toy-btn toy-ads" onclick="location.href='/list'">
+      <span>📋</span><br>Объявления
+    </button>
+    <button class="toy-btn toy-order" onclick="location.href='/order'">
+      <span>🚕</span><br>Заказать трезвого водителя
+    </button>
+    <!-- "Я — водитель" чуть ниже -->
+    <div class="toy-btn-driver-container">
+      <button class="toy-btn toy-driver" onclick="location.href='/driver'">
+        <span>🦺</span><br>Я — водитель
+      </button>
+    </div>
   </main>
+
   <footer class="footer">
-    <button class="small-button btn-exit">Выйти</button>
+    <button class="toy-btn toy-exit" onclick="location.href='/'">Выйти</button>
   </footer>
+
+  <script>
+    // Telegram init
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg) {
+      tg.ready();
+      if (tg.initDataUnsafe) {
+        localStorage.setItem('tg_init', JSON.stringify(tg.initDataUnsafe));
+      }
+    }
+  </script>
 </body>
 </html>
