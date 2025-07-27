@@ -5,8 +5,15 @@
   <title>ЛК Водителя</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    .profile, .status, .orders { padding:24px; }
+    .profile img { width:80px; height:80px; border-radius:50%; margin-bottom:12px; object-fit:cover; }
+    .profile input, .profile button { display:block; width:100%; margin-bottom:12px; padding:10px; border-radius:8px; border:1px solid #ccc; }
+    .profile button { border:none; background:#ffe680; cursor:pointer; }
+    .save-status { color:green; margin-top:8px; height:18px; }
+    .order-item { padding:12px; margin-bottom:8px; border-radius:12px; background:#e0ffe0; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+  </style>
 </head>
 <body>
   <header class="header">
@@ -19,19 +26,17 @@
       <h2>Регистрация водителя</h2>
       <img id="avatar-img" src="https://via.placeholder.com/80" alt="Аватар">
       <input id="driver-avatar" type="file" accept="image/*" onchange="previewAvatar(event)">
-      <input id="driver-id" type="text" placeholder="Telegram ID" readonly>
-      <input id="driver-name" type="text" placeholder="Имя">
-      <input id="driver-city" type="text" placeholder="Город" value="Алматы">
+      <input id="driver-id"     type="text" placeholder="Telegram ID" readonly>
+      <input id="driver-name"   type="text" placeholder="Имя">
+      <input id="driver-city"   type="text" placeholder="Город" value="Алматы">
       <button onclick="saveDriver()">Сохранить</button>
       <div id="driver-save-status" class="save-status"></div>
     </div>
 
-    <div class="status-row">
+    <div class="status">
       <h2>Статус доступа</h2>
-      <div class="driver-status-block">
-        <span id="access-status" class="driver-status-active">Доступ активен</span>
-        <button class="status-refresh-btn" onclick="refreshStatus()" title="Обновить статус">🔄</button>
-      </div>
+      <p id="access-status">Доступ активен</p>
+      <button onclick="location.reload()">Обновить статус</button>
     </div>
 
     <div class="orders">
@@ -41,65 +46,18 @@
   </main>
 
   <script>
-    // Telegram SDK
-    const tg = window.Telegram && window.Telegram.WebApp;
-
-    function tryFillDriverID() {
-      let id = '';
-      // 1. Из initDataUnsafe
-      if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
-        id = tg.initDataUnsafe.user.id;
-      }
-      // 2. Или из localStorage
-      else if (localStorage.getItem('tg_init')) {
-        try {
-          const data = JSON.parse(localStorage.getItem('tg_init'));
-          if (data.user && data.user.id) id = data.user.id;
-        } catch(e){}
-      }
-      // 3. Вставляем
-      if (id) {
-        document.getElementById('driver-id').value = id;
-      } else {
-        document.getElementById('driver-id').placeholder = 'Нет ID (запусти через Telegram)';
-      }
-    }
-
+    if (window.Telegram?.WebApp) window.Telegram.WebApp.expand();
     document.addEventListener('DOMContentLoaded', () => {
-      if (tg) tg.expand();
-      tryFillDriverID();
+      const params = new URLSearchParams(window.location.search);
+      const uid = params.get('user_id') || localStorage.getItem('tg_user_id') || '1234567890';
+      document.getElementById('driver-id').value = uid;
       loadDriverOrders();
-      loadDriverStatus();
     });
-
-    function previewAvatar(e) {
-      const reader = new FileReader();
-      reader.onload = () => document.getElementById('avatar-img').src = reader.result;
-      reader.readAsDataURL(e.target.files[0]);
-    }
-
-    function saveDriver() {
-      const form = new FormData();
-      form.append('tg_id', document.getElementById('driver-id').value);
-      form.append('name',  document.getElementById('driver-name').value.trim());
-      form.append('city',  document.getElementById('driver-city').value.trim());
-      const file = document.getElementById('driver-avatar').files[0];
-      if (file) form.append('avatar', file);
-
-      fetch('/api/drivers', { method:'POST', body: form })
-        .then(res=>res.json())
-        .then(()=>{
-          const status = document.getElementById('driver-save-status');
-          status.textContent = 'Сохранено';
-          setTimeout(()=>status.textContent = '', 2000);
-        })
-        .catch(()=> alert('Ошибка сохранения'));
-    }
 
     function loadDriverOrders() {
       fetch('/api/orders')
-        .then(r=>r.json())
-        .then(data=>{
+        .then(r => r.json())
+        .then(data => {
           const c = document.getElementById('driver-orders');
           if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
           c.innerHTML = data.map(o=>`
@@ -112,24 +70,44 @@
         });
     }
 
-    // Красивый статус
-    function loadDriverStatus() {
-      setDriverStatus('active');
+    function previewAvatar(e) {
+      const reader = new FileReader();
+      reader.onload = ()=> document.getElementById('avatar-img').src = reader.result;
+      reader.readAsDataURL(e.target.files[0]);
     }
-    function refreshStatus() {
-      setDriverStatus('active');
-      const btn = document.querySelector('.status-refresh-btn');
-      btn.classList.add('spin');
-      setTimeout(()=>btn.classList.remove('spin'), 600);
-    }
-    function setDriverStatus(status) {
-      const el = document.getElementById('access-status');
-      if (status === 'active') {
-        el.textContent = 'Доступ активен';
-        el.className = 'driver-status-active';
-      } else {
-        el.textContent = 'Неактивен';
-        el.className = 'driver-status-inactive';
+
+    async function saveDriver() {
+      const form = new FormData();
+      form.append('tg_id', document.getElementById('driver-id').value);
+      form.append('name',  document.getElementById('driver-name').value.trim());
+      form.append('city',  document.getElementById('driver-city').value.trim());
+      const file = document.getElementById('driver-avatar').files[0];
+      if (file) form.append('avatar', file);
+
+      console.log('[saveDriver] formData entries:');
+      for (let [k,v] of form.entries()) console.log(k, v);
+
+      try {
+        const res = await fetch('/api/drivers', { method:'POST', body: form });
+        const text = await res.text();
+        console.log('[saveDriver] raw response:', text);
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch(e) {
+          throw new Error('Невалидный JSON: ' + e.message);
+        }
+        console.log('[saveDriver] parsed JSON:', data);
+        if (data.status === 'ok') {
+          const status = document.getElementById('driver-save-status');
+          status.textContent = 'Сохранено';
+          setTimeout(()=> status.textContent = '', 2000);
+        } else {
+          throw new Error('Статус != ok: ' + JSON.stringify(data));
+        }
+      } catch(err) {
+        console.error('[saveDriver] ошибка:', err);
+        alert('Ошибка сохранения:\n' + err.message);
       }
     }
   </script>
