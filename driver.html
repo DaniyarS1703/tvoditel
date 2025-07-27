@@ -176,7 +176,8 @@
           if (driver) {
             showProfileView(driver);
           } else {
-            showProfileEdit();
+            // Перенаправление на регистрацию
+            window.location.href = '/register_driver?user_id=' + encodeURIComponent(uid);
           }
         });
     }

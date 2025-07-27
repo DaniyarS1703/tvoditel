@@ -38,6 +38,8 @@ def client():    return send_from_directory('.', 'client.html')
 def driver():    return send_from_directory('.', 'driver.html')
 @app.route('/admin')
 def admin():     return send_from_directory('.', 'admin.html')
+@app.route('/register_driver')
+def register_driver(): return send_from_directory('.', 'register_driver.html')
 @app.route('/avatars/<filename>')
 def avatars(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
@@ -88,14 +90,16 @@ def delete_order(idx):
 
 # Регистрация водителей (POST)
 @app.route('/api/drivers', methods=['POST'])
-def register_driver():
+def register_driver_api():
     tg_id = request.form.get('tg_id')
     name  = request.form.get('name')
     city  = request.form.get('city')
+    phone = request.form.get('phone')
     data  = {
         'tg_id': tg_id,
         'name': name,
         'city': city,
+        'phone': phone,
         'status': 'active'  # Статус по умолчанию
     }
 
