@@ -19,9 +19,9 @@
       <h2>Регистрация водителя</h2>
       <img id="avatar-img" src="https://via.placeholder.com/80" alt="Аватар">
       <input id="driver-avatar" type="file" accept="image/*" onchange="previewAvatar(event)">
-      <input id="driver-id"     type="text" placeholder="Telegram ID" readonly>
-      <input id="driver-name"   type="text" placeholder="Имя">
-      <input id="driver-city"   type="text" placeholder="Город" value="Алматы">
+      <input id="driver-id" type="text" placeholder="Telegram ID" readonly>
+      <input id="driver-name" type="text" placeholder="Имя">
+      <input id="driver-city" type="text" placeholder="Город" value="Алматы">
       <button onclick="saveDriver()">Сохранить</button>
       <div id="driver-save-status" class="save-status"></div>
     </div>
@@ -43,12 +43,31 @@
   <script>
     // Telegram SDK
     const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg) tg.expand();
+
+    function tryFillDriverID() {
+      let id = '';
+      // 1. Из initDataUnsafe
+      if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+        id = tg.initDataUnsafe.user.id;
+      }
+      // 2. Или из localStorage
+      else if (localStorage.getItem('tg_init')) {
+        try {
+          const data = JSON.parse(localStorage.getItem('tg_init'));
+          if (data.user && data.user.id) id = data.user.id;
+        } catch(e){}
+      }
+      // 3. Вставляем
+      if (id) {
+        document.getElementById('driver-id').value = id;
+      } else {
+        document.getElementById('driver-id').placeholder = 'Нет ID (запусти через Telegram)';
+      }
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
-      if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        document.getElementById('driver-id').value = tg.initDataUnsafe.user.id;
-      }
+      if (tg) tg.expand();
+      tryFillDriverID();
       loadDriverOrders();
       loadDriverStatus();
     });
@@ -93,16 +112,12 @@
         });
     }
 
-    // === Новый функционал — красиво отображаем статус ===
+    // Красивый статус
     function loadDriverStatus() {
-      // Тут можно получать статус из базы через /api/drivers, если нужно
-      // Пока для красоты просто отображаем "активен"
       setDriverStatus('active');
     }
     function refreshStatus() {
-      // Тут можно добавить перезапрос статуса из API, если потребуется
       setDriverStatus('active');
-      // Визуальная анимация на кнопке
       const btn = document.querySelector('.status-refresh-btn');
       btn.classList.add('spin');
       setTimeout(()=>btn.classList.remove('spin'), 600);
