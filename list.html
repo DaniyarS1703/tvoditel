@@ -5,6 +5,15 @@
   <title>Список объявлений</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .order-item {
+      padding: 12px;
+      margin-bottom: 8px;
+      border-radius: 12px;
+      background-color: #fffbea;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
   <header class="header">
@@ -12,7 +21,30 @@
     <div class="city">Алматы</div>
   </header>
   <main style="padding:24px;">
-    <p>Здесь будет список объявлений.</p>
+    <h2>Список объявлений</h2>
+    <div id="orders"></div>
   </main>
+
+  <script>
+    fetch('/api/orders')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('orders');
+        if (!data.length) {
+          container.innerHTML = '<p>Нет объявлений.</p>';
+          return;
+        }
+        container.innerHTML = data.map(o => `
+          <div class="order-item">
+            <strong>${o.name}</strong> (${o.phone})<br>
+            ${o.car_model} — ${o.route}<br>
+            <em>${o.price} ₸</em>
+          </div>
+        `).join('');
+      })
+      .catch(() => {
+        document.getElementById('orders').innerHTML = '<p>Ошибка загрузки.</p>';
+      });
+  </script>
 </body>
 </html>
