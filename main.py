@@ -2,17 +2,19 @@ import os
 from flask import Flask, send_from_directory, request
 from flask_cors import CORS
 import telebot
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
 # 1) Настройки
 TELEGRAM_TOKEN = "7943726818:AAFwDFEewyqOtVQGjzb5Uavzd7XhG1KCJcA"
 WEBHOOK_SECRET = "tvoditel-secret"
+APP_URL = "https://tvoditel.onrender.com"
 
-# 2) Инициализация
+# 2) Инициализация бота и Flask
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 app = Flask(__name__)
 CORS(app)
 
-# 3) Маршруты для веба
+# 3) Веб‑маршруты
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
@@ -27,19 +29,11 @@ def order_page():
 
 @app.route('/submit', methods=['POST'])
 def submit_order():
-    data = {
-        'name':       request.form.get('name'),
-        'phone':      request.form.get('phone'),
-        'car_model':  request.form.get('car_model'),
-        'route':      request.form.get('route'),
-        'price':      request.form.get('price'),
-        'city':       request.form.get('city')
-    }
-    # Здесь вы можете сохранить data в БД или отправить менеджеру
+    data = {k: request.form.get(k) for k in ('name','phone','car_model','route','price','city')}
     print("Новая заявка:", data)
     return "Спасибо, заявка принята!"
 
-# 4) Webhook для Telegram
+# 4) Обработка Webhook от Telegram
 @app.route(f'/{WEBHOOK_SECRET}', methods=['POST'])
 def webhook():
     if request.headers.get('content-type') == 'application/json':
@@ -48,12 +42,19 @@ def webhook():
         return '', 200
     return 'Unsupported Media Type', 415
 
-# 5) Обработчик команды /start
+# 5) Обработчик /start с кнопкой WebApp
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, "Привет! Это бот 'Трезвый водитель' 🚘")
+    kb = ReplyKeyboardMarkup(resize_keyboard=True)
+    webapp_info = WebAppInfo(url=APP_URL)
+    kb.add(KeyboardButton("Открыть мини‑приложение", web_app=webapp_info))
+    bot.send_message(
+        message.chat.id,
+        "Добро пожаловать! Нажмите кнопку ниже, чтобы открыть Мини‑приложение:",
+        reply_markup=kb
+    )
 
-# 6) Запуск Flask
+# 6) Запуск сервера
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
