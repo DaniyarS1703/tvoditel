@@ -168,12 +168,14 @@
   <script>
     let currentProfile = null;
     let currentStatus = 'active';
+    let currentUid = null;
 
     if (window.Telegram?.WebApp) window.Telegram.WebApp.expand();
 
     document.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
       const uid = params.get('user_id') || localStorage.getItem('tg_user_id') || '1234567890';
+      currentUid = uid;
       document.getElementById('driver-id').value = uid;
       loadDriverProfile(uid);
       loadDriverOrders();
@@ -297,12 +299,21 @@
         el.className = 'driver-status-inactive';
       }
     }
+
     function refreshStatus() {
-      // Обновляет статус из профиля, анимация
-      setDriverStatus(currentStatus);
       const btn = document.querySelector('.status-refresh-btn');
       btn.classList.add('spin');
-      setTimeout(()=>btn.classList.remove('spin'), 600);
+      // Перезапрашиваем данные и обновляем статус по факту
+      fetch('/api/drivers')
+        .then(res => res.json())
+        .then(drivers => {
+          const driver = drivers.find(d => d.tg_id == currentUid);
+          if (driver) {
+            currentStatus = driver.status || 'active';
+            setDriverStatus(currentStatus);
+          }
+        })
+        .finally(() => setTimeout(()=>btn.classList.remove('spin'), 600));
     }
   </script>
 </body>
