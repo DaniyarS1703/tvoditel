@@ -7,27 +7,33 @@
   <link rel="stylesheet" href="style.css">
   <style>
     .profile, .status, .orders { padding:24px; }
-    .profile img { width:80px; height:80px; border-radius:50%; display:block; margin-bottom:12px; }
-    .profile input { display:block; width:100%; margin-bottom:12px; padding:10px; border-radius:8px; border:1px solid #ccc; }
-    .profile button, .status button { padding:12px; border:none; border-radius:12px; background:#ffe680; cursor:pointer; }
+    .profile img { width:80px; height:80px; border-radius:50%; margin-bottom:12px; object-fit:cover; }
+    .profile input, .profile button { display:block; width:100%; margin-bottom:12px; padding:10px; border-radius:8px; border:1px solid #ccc; }
+    .profile button { border:none; background:#ffe680; cursor:pointer; }
     .save-status { color:green; margin-top:8px; height:18px; }
     .order-item { padding:12px; margin-bottom:8px; border-radius:12px; background:#e0ffe0; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
   </style>
   <script>
+    function previewAvatar(e) {
+      const reader = new FileReader();
+      reader.onload = ()=> document.getElementById('avatar-img').src = reader.result;
+      reader.readAsDataURL(e.target.files[0]);
+    }
+
     function saveDriver() {
-      const tgId = document.getElementById('driver-id').value.trim();
-      const name = document.getElementById('driver-name').value.trim();
-      const city = document.getElementById('driver-city').value.trim();
-      fetch('/api/drivers', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ tg_id: tgId, name, city })
-      })
-      .then(res=>res.json())
-      .then(()=> {
-        document.getElementById('driver-save-status').textContent = 'Сохранено';
-        setTimeout(()=>document.getElementById('driver-save-status').textContent = '', 2000);
-      });
+      const form = new FormData();
+      form.append('tg_id',   document.getElementById('driver-id').value.trim());
+      form.append('name',    document.getElementById('driver-name').value.trim());
+      form.append('city',    document.getElementById('driver-city').value.trim());
+      const file = document.getElementById('driver-avatar').files[0];
+      if (file) form.append('avatar', file);
+
+      fetch('/api/drivers', { method:'POST', body: form })
+        .then(res=>res.json())
+        .then(()=>{
+          document.getElementById('driver-save-status').textContent = 'Сохранено';
+          setTimeout(()=>document.getElementById('driver-save-status').textContent = '', 2000);
+        });
     }
 
     function loadDriverOrders() {
@@ -59,10 +65,11 @@
   <main>
     <div class="profile">
       <h2>Регистрация водителя</h2>
-      <img src="https://via.placeholder.com/80" alt="Аватар">
-      <input id="driver-id"   type="text" placeholder="Telegram ID">
-      <input id="driver-name" type="text" placeholder="Имя">
-      <input id="driver-city" type="text" placeholder="Город" value="Алматы">
+      <img id="avatar-img" src="https://via.placeholder.com/80" alt="Аватар">
+      <input id="driver-avatar" type="file" accept="image/*" onchange="previewAvatar(event)">
+      <input id="driver-id"     type="text" placeholder="Telegram ID">
+      <input id="driver-name"   type="text" placeholder="Имя">
+      <input id="driver-city"   type="text" placeholder="Город" value="Алматы">
       <button onclick="saveDriver()">Сохранить</button>
       <div id="driver-save-status" class="save-status"></div>
     </div>
