@@ -1,12 +1,12 @@
 import os
-from flask import Flask, send_from_directory
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 import telebot
-import threading
-import time
 
 TELEGRAM_TOKEN = "7943726818:AAFwDFEewyqOtVQGjzb5Uavzd7XhG1KCJcA"
+WEBHOOK_SECRET = "tvoditel-secret"
 
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
 app = Flask(__name__)
 CORS(app)
 
@@ -15,31 +15,27 @@ CORS(app)
 def index():
     return send_from_directory('.', 'index.html')
 
-# Стили
 @app.route('/style.css')
 def style():
     return send_from_directory('.', 'style.css')
 
-# Бот
-bot = telebot.TeleBot(TELEGRAM_TOKEN)
+# Обработка Webhook от Telegram
+@app.route(f'/{WEBHOOK_SECRET}', methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return '', 200
+    else:
+        return 'Unsupported Media Type', 415
 
+# Пример обработчика команд
 @bot.message_handler(commands=['start'])
-def welcome(message):
-    bot.send_message(message.chat.id, "Привет! Это мини-приложение 'Трезвый водитель' 🚘")
+def start(message):
+    bot.send_message(message.chat.id, "Привет! Это бот 'Трезвый водитель' 🚘")
 
-# Защита от падения polling
-def run_bot():
-    while True:
-        try:
-            bot.infinity_polling(timeout=10, long_polling_timeout=5)
-        except Exception as e:
-            print(f"[Bot Error] {e}")
-            time.sleep(5)
-
-# Запуск в фоне
-threading.Thread(target=run_bot).start()
-
-# Запуск Flask
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+# Запуск сервера
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
