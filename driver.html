@@ -44,42 +44,51 @@
   </main>
 
   <script>
-    const tg = window.Telegram.WebApp;
+    const tg = window.Telegram && window.Telegram.WebApp;
     if (tg) tg.expand();
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Парсим initData из параметра URL
+      // Пытаемся получить ID из параметра URL
       let init = {};
       const params = new URLSearchParams(window.location.search);
       if (params.has('init')) {
         try { init = JSON.parse(decodeURIComponent(params.get('init'))); } catch {}
       }
-      // Если не получилось — берём из localStorage
+      // Если не получилось — из localStorage
       if (!init.user) {
         const stored = localStorage.getItem('tg_init');
         if (stored) {
           try { init = JSON.parse(stored); } catch {}
         }
       }
-      if (init.user && init.user.id) {
-        document.getElementById('driver-id').value = init.user.id;
+      // Из Telegram SDK напрямую, если доступно
+      const sdkUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+      let id = (sdkUser && sdkUser.id) || (init.user && init.user.id) || '';
+
+      // **Тестовый fallback** — подставляем любое число, чтобы проверить код
+      if (!id) {
+        id = '1234567890';
+        console.warn('Telegram ID не определился, подставлен тестовый:', id);
       }
 
+      document.getElementById('driver-id').value = id;
       loadDriverOrders();
     });
 
     function loadDriverOrders() {
-      fetch('/api/orders').then(r=>r.json()).then(data=>{
-        const c = document.getElementById('driver-orders');
-        if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
-        c.innerHTML = data.map(o=>`
-          <div class="order-item">
-            <strong>${o.name}</strong> (${o.phone})<br>
-            ${o.car_model} — ${o.route}<br>
-            <em>${o.price} ₸</em>
-          </div>
-        `).join('');
-      });
+      fetch('/api/orders')
+        .then(r=>r.json())
+        .then(data=>{
+          const c = document.getElementById('driver-orders');
+          if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
+          c.innerHTML = data.map(o=>`
+            <div class="order-item">
+              <strong>${o.name}</strong> (${o.phone})<br>
+              ${o.car_model} — ${o.route}<br>
+              <em>${o.price} ₸</em>
+            </div>
+          `).join('');
+        });
     }
 
     function previewAvatar(e) {
