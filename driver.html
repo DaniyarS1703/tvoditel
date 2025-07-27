@@ -2,21 +2,82 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>ЛК Водителя</title>
+  <title>Личный кабинет водителя</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     .profile, .orders { padding:24px; }
-    .status-row {
-      margin: 32px 0 14px 0;
-      padding: 0 24px 0 24px;
+    .profile-view {
+      text-align: center;
+      margin-bottom: 18px;
     }
+    .profile-view img {
+      width: 92px; height: 92px; border-radius: 50%; object-fit: cover; margin-bottom: 12px;
+      border: 2.5px solid #e2ffe6;
+      box-shadow: 0 2px 8px #24b45013;
+    }
+    .profile-name {
+      font-size: 1.35em; font-weight: bold; margin-bottom: 3px;
+    }
+    .profile-city {
+      color: #278ee2; font-size: 1.13em; font-weight: 500; margin-bottom: 9px;
+    }
+    .profile-edit-btn {
+      background: #ffe680;
+      color: #444;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 24px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-bottom: 9px;
+      font-weight: bold;
+      transition: background .14s;
+    }
+    .profile-edit-btn:active { background: #ffefa5; }
+    .profile-form { margin-bottom: 7px; }
+    .profile-form input[type=text] {
+      display: block; width: 100%; margin-bottom: 10px; padding: 10px;
+      border-radius: 8px; border: 1.3px solid #bbe2fa;
+      font-size: 1.07em;
+    }
+    .profile-form input[type=file] { margin-bottom: 13px; }
+    .profile-form .btns-row { display: flex; gap: 14px; }
+    .profile-form button {
+      flex: 1;
+      padding: 9px 0;
+      border-radius: 10px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      background: #ffe680;
+      transition: background .13s;
+    }
+    .profile-form button:active { background: #ffefa5; }
+    .save-status-bar {
+      margin-top: 7px;
+      margin-bottom: 0;
+      background: #e2ffe6;
+      color: #24b450;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.02em;
+      padding: 7px 0;
+      min-height: 19px;
+      transition: opacity 0.2s;
+      opacity: 1;
+    }
+    .save-status-bar.hide { opacity: 0; }
     .driver-status-block {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-top: 6px;
+      margin-top: 10px;
+      margin-bottom: 12px;
+      justify-content: center;
     }
     .driver-status-active {
       font-weight: bold;
@@ -27,20 +88,9 @@
       border-radius: 16px;
       box-shadow: 0 2px 8px #0e4b1c13;
       letter-spacing: .01em;
+      min-width: 155px;
+      text-align: center;
       display: inline-block;
-      min-width: 155px;
-      text-align: center;
-    }
-    .driver-status-inactive {
-      font-weight: bold;
-      font-size: 1.22em;
-      color: #bbb;
-      background: #f5f5f5;
-      padding: 8px 24px;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px #0001;
-      min-width: 155px;
-      text-align: center;
     }
     .status-refresh-btn {
       width: 42px; height: 42px;
@@ -62,17 +112,10 @@
       box-shadow: 0 1px 3px #8dd1ff22;
       transform: scale(0.93);
     }
-    .status-refresh-btn.spin {
-      animation: spin 0.6s linear;
-    }
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
-    }
-    .profile img { width:80px; height:80px; border-radius:50%; margin-bottom:12px; object-fit:cover; }
-    .profile input, .profile button { display:block; width:100%; margin-bottom:12px; padding:10px; border-radius:8px; border:1px solid #ccc; }
-    .profile button { border:none; background:#ffe680; cursor:pointer; }
-    .save-status { color:green; margin-top:8px; height:18px; }
+    .status-refresh-btn.spin { animation: spin 0.6s linear; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
     .order-item { padding:12px; margin-bottom:8px; border-radius:12px; background:#e0ffe0; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+    h2 { margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -80,31 +123,40 @@
     <button class="small-button btn-back" onclick="location.href='/'">← Назад</button>
     <div class="city">Алматы</div>
   </header>
-
   <main>
     <div class="profile">
-      <h2>Регистрация водителя</h2>
-      <img id="avatar-img" src="https://via.placeholder.com/80" alt="Аватар">
-      <input id="driver-avatar" type="file" accept="image/*" onchange="previewAvatar(event)">
-      <input id="driver-id"     type="text" placeholder="Telegram ID" readonly>
-      <input id="driver-name"   type="text" placeholder="Имя">
-      <input id="driver-city"   type="text" placeholder="Город" value="Алматы">
-      <button onclick="saveDriver()">Сохранить</button>
-      <div id="driver-save-status" class="save-status"></div>
-      <div id="driver-status-row" class="driver-status-block" style="margin-top:18px;">
-        <span id="access-status" class="driver-status-active">Доступ активен</span>
-        <button class="status-refresh-btn" onclick="refreshStatus()" title="Обновить статус">🔄</button>
+      <h2>Личный кабинет водителя</h2>
+      <div id="profile-view" class="profile-view" style="display:none;">
+        <img id="avatar-img" src="https://via.placeholder.com/80" alt="Аватар">
+        <div class="profile-name" id="profile-name"></div>
+        <div class="profile-city" id="profile-city"></div>
+        <div class="driver-status-block">
+          <span id="access-status" class="driver-status-active">Доступ активен</span>
+          <button class="status-refresh-btn" onclick="refreshStatus()" title="Обновить статус">🔄</button>
+        </div>
+        <button class="profile-edit-btn" onclick="editProfile()">Редактировать</button>
       </div>
+      <form id="profile-form" class="profile-form" style="display:none;" onsubmit="event.preventDefault();saveDriver();">
+        <input id="driver-id"     type="text" placeholder="Telegram ID" readonly>
+        <input id="driver-name"   type="text" placeholder="Имя" required>
+        <input id="driver-city"   type="text" placeholder="Город" value="Алматы" required>
+        <input id="driver-avatar" type="file" accept="image/*" onchange="previewAvatar(event)">
+        <div class="btns-row">
+          <button type="submit">Сохранить</button>
+          <button type="button" onclick="cancelEdit()">Отмена</button>
+        </div>
+        <div id="driver-save-status" class="save-status-bar"></div>
+      </form>
     </div>
-
     <div class="orders">
-      <h2>Список заказов</h2>
+      <h2>История заказов</h2>
       <div id="driver-orders"><p>Загрузка…</p></div>
     </div>
   </main>
-
   <script>
+    let currentProfile = null;
     if (window.Telegram?.WebApp) window.Telegram.WebApp.expand();
+
     document.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
       const uid = params.get('user_id') || localStorage.getItem('tg_user_id') || '1234567890';
@@ -114,28 +166,50 @@
       loadDriverStatus();
     });
 
-    function loadDriverOrders() {
-      fetch('/api/orders')
-        .then(r => r.json())
-        .then(data => {
-          const c = document.getElementById('driver-orders');
-          if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
-          c.innerHTML = data.map(o=>`
-            <div class="order-item">
-              <strong>${o.name}</strong> (${o.phone})<br>
-              ${o.car_model} — ${o.route}<br>
-              <em>${o.price} ₸</em>
-            </div>
-          `).join('');
+    // 1. Загружаем профиль, показываем как инфо, если есть
+    function loadDriverProfile(uid) {
+      fetch('/api/drivers')
+        .then(res => res.json())
+        .then(drivers => {
+          const driver = drivers.find(d => d.tg_id == uid);
+          currentProfile = driver;
+          if (driver) {
+            showProfileView(driver);
+          } else {
+            showProfileEdit();
+          }
         });
     }
 
-    function previewAvatar(e) {
-      const reader = new FileReader();
-      reader.onload = ()=> document.getElementById('avatar-img').src = reader.result;
-      reader.readAsDataURL(e.target.files[0]);
+    function showProfileView(driver) {
+      document.getElementById('profile-form').style.display = 'none';
+      document.getElementById('profile-view').style.display = 'block';
+      document.getElementById('profile-name').textContent = driver.name || '';
+      document.getElementById('profile-city').textContent = driver.city || 'Алматы';
+      document.getElementById('avatar-img').src = driver.avatar || 'https://via.placeholder.com/80';
     }
 
+    function showProfileEdit() {
+      document.getElementById('profile-form').style.display = 'block';
+      document.getElementById('profile-view').style.display = 'none';
+      // Если уже был профиль — заполняем
+      if (currentProfile) {
+        document.getElementById('driver-name').value = currentProfile.name || '';
+        document.getElementById('driver-city').value = currentProfile.city || 'Алматы';
+        document.getElementById('avatar-img').src = currentProfile.avatar || 'https://via.placeholder.com/80';
+      }
+    }
+
+    function editProfile() {
+      showProfileEdit();
+    }
+
+    function cancelEdit() {
+      showProfileView(currentProfile);
+      clearSaveStatus();
+    }
+
+    // 2. Сохранить профиль
     async function saveDriver() {
       const form = new FormData();
       form.append('tg_id', document.getElementById('driver-id').value);
@@ -154,29 +228,45 @@
           throw new Error('Невалидный JSON: ' + e.message);
         }
         if (data.status === 'ok') {
-          const status = document.getElementById('driver-save-status');
-          status.textContent = 'Сохранено';
-          setTimeout(()=> status.textContent = '', 2000);
+          showSaveStatus('Сохранено');
+          setTimeout(clearSaveStatus, 2500);
+          // Обновить view
+          loadDriverProfile(document.getElementById('driver-id').value);
         } else {
           throw new Error('Статус != ok: ' + JSON.stringify(data));
         }
       } catch(err) {
-        alert('Ошибка сохранения:\n' + err.message);
+        showSaveStatus('Ошибка сохранения: ' + err.message, true);
       }
     }
 
-    // ——— Автозаполнение профиля водителя ———
-    function loadDriverProfile(uid) {
-      fetch('/api/drivers')
-        .then(res => res.json())
-        .then(drivers => {
-          const driver = drivers.find(d => d.tg_id == uid);
-          if (driver) {
-            document.getElementById('driver-name').value = driver.name || '';
-            document.getElementById('driver-city').value = driver.city || 'Алматы';
-            if (driver.avatar)
-              document.getElementById('avatar-img').src = driver.avatar;
-          }
+    function showSaveStatus(msg, error=false) {
+      const el = document.getElementById('driver-save-status');
+      el.textContent = msg;
+      el.style.background = error ? '#ffe3e3' : '#e2ffe6';
+      el.style.color = error ? '#be2727' : '#24b450';
+      el.classList.remove('hide');
+    }
+    function clearSaveStatus() {
+      const el = document.getElementById('driver-save-status');
+      el.textContent = '';
+      el.classList.add('hide');
+    }
+
+    // 3. История заказов
+    function loadDriverOrders() {
+      fetch('/api/orders')
+        .then(r => r.json())
+        .then(data => {
+          const c = document.getElementById('driver-orders');
+          if (!data.length) return c.innerHTML = '<p>Нет заказов.</p>';
+          c.innerHTML = data.map(o=>`
+            <div class="order-item">
+              <strong>${o.name}</strong> (${o.phone})<br>
+              ${o.car_model} — ${o.route}<br>
+              <em>${o.price} ₸</em>
+            </div>
+          `).join('');
         });
     }
 
