@@ -5,15 +5,18 @@ from flask_cors import CORS
 import telebot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
+# Настройки
 TELEGRAM_TOKEN = "7943726818:AAFwDFEewyqOtVQGjzb5Uavzd7XhG1KCJcA"
 WEBHOOK_SECRET = "tvoditel-secret"
-APP_URL = "https://tvoditel.onrender.com"
-ORDERS_FILE = 'orders.json'
+APP_URL        = "https://tvoditel.onrender.com"
+ORDERS_FILE    = 'orders.json'
 
+# Инициализация
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 app = Flask(__name__)
 CORS(app)
 
+# WebApp‑страницы
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
@@ -38,6 +41,11 @@ def client_page():
 def driver_page():
     return send_from_directory('.', 'driver.html')
 
+@app.route('/admin')
+def admin_page():
+    return send_from_directory('.', 'admin.html')
+
+# Обработка формы заказа и сохранение
 @app.route('/submit', methods=['POST'])
 def submit_order():
     frm = request.form.get('route_from')
@@ -63,6 +71,7 @@ def submit_order():
     print("Новая заявка:", order)
     return "Спасибо, заявка принята!"
 
+# API для списка заявок
 @app.route('/api/orders')
 def api_orders():
     if os.path.exists(ORDERS_FILE):
@@ -70,13 +79,13 @@ def api_orders():
             return jsonify(json.load(f))
     return jsonify([])
 
+# API для удаления заявки по индексу
 @app.route('/api/orders/<int:idx>', methods=['DELETE'])
 def delete_order(idx):
+    orders = []
     if os.path.exists(ORDERS_FILE):
         with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
             orders = json.load(f)
-    else:
-        orders = []
     if 0 <= idx < len(orders):
         orders.pop(idx)
         with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
@@ -84,6 +93,7 @@ def delete_order(idx):
         return '', 200
     return 'Not Found', 404
 
+# Telegram Webhook
 @app.route(f'/{WEBHOOK_SECRET}', methods=['POST'])
 def webhook():
     if request.headers.get('content-type') == 'application/json':
@@ -92,6 +102,7 @@ def webhook():
         return '', 200
     return 'Unsupported Media Type', 415
 
+# Обработчик /start
 @bot.message_handler(commands=['start'])
 def start(message):
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -103,6 +114,7 @@ def start(message):
         reply_markup=kb
     )
 
+# Запуск
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
