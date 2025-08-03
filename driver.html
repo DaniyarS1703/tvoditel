@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    /* ... (стили без изменений) ... */
     .profile, .orders { padding:24px; }
     .profile-view {
       text-align: center;
@@ -22,7 +21,10 @@
       font-size: 1.35em; font-weight: bold; margin-bottom: 3px;
     }
     .profile-city {
-      color: #278ee2; font-size: 1.13em; font-weight: 500; margin-bottom: 9px;
+      color: #278ee2; font-size: 1.13em; font-weight: 500; margin-bottom: 7px;
+    }
+    .profile-phone {
+      color: #666; font-size: 1.07em; margin-bottom: 9px; display:block;
     }
     .profile-edit-btn {
       background: #ffe680;
@@ -143,6 +145,7 @@
         <img id="avatar-img" src="https://via.placeholder.com/80" alt="Аватар">
         <div class="profile-name" id="profile-name"></div>
         <div class="profile-city" id="profile-city"></div>
+        <div class="profile-phone" id="profile-phone"></div>
         <div class="driver-status-block">
           <span id="access-status" class="driver-status-active">Доступ активен</span>
           <button class="status-refresh-btn" onclick="refreshStatus()" title="Обновить статус">🔄</button>
@@ -153,6 +156,7 @@
         <input id="driver-id"     type="text" placeholder="Telegram ID" readonly>
         <input id="driver-name"   type="text" placeholder="Имя" required>
         <input id="driver-city"   type="text" placeholder="Город" value="Алматы" required>
+        <input id="driver-phone"  type="text" placeholder="Телефон" required>
         <input id="driver-avatar" type="file" accept="image/*" onchange="previewAvatar(event)">
         <div class="btns-row">
           <button type="submit">Сохранить</button>
@@ -173,9 +177,7 @@
 
     if (window.Telegram?.WebApp) window.Telegram.WebApp.expand();
 
-    // Универсальное получение Telegram ID:
     function getTelegramId() {
-      // 1. Пытаемся получить реальный ID через Telegram WebApp API
       if (
         window.Telegram &&
         window.Telegram.WebApp &&
@@ -185,7 +187,6 @@
       ) {
         return window.Telegram.WebApp.initDataUnsafe.user.id;
       }
-      // 2. Старый механизм (URL, localStorage, заглушка)
       const params = new URLSearchParams(window.location.search);
       return params.get('user_id') || localStorage.getItem('tg_user_id') || '1234567890';
     }
@@ -198,7 +199,6 @@
       loadDriverOrders();
     });
 
-    // 1. Загружаем профиль, показываем как инфо, если есть
     function loadDriverProfile(uid) {
       fetch('/api/drivers')
         .then(res => res.json())
@@ -210,7 +210,6 @@
             showProfileView(driver);
             setDriverStatus(currentStatus);
           } else {
-            // Перенаправление на регистрацию
             window.location.href = '/register_driver?user_id=' + encodeURIComponent(uid);
           }
         });
@@ -222,16 +221,18 @@
       document.getElementById('profile-name').textContent = driver.name || '';
       document.getElementById('profile-city').textContent = driver.city || 'Алматы';
       document.getElementById('avatar-img').src = driver.avatar || 'https://via.placeholder.com/80';
+      // Телефон
+      document.getElementById('profile-phone').textContent = driver.phone ? ('Телефон: ' + driver.phone) : '';
     }
 
     function showProfileEdit() {
       document.getElementById('profile-form').style.display = 'block';
       document.getElementById('profile-view').style.display = 'none';
-      // Если уже был профиль — заполняем
       if (currentProfile) {
         document.getElementById('driver-name').value = currentProfile.name || '';
         document.getElementById('driver-city').value = currentProfile.city || 'Алматы';
         document.getElementById('avatar-img').src = currentProfile.avatar || 'https://via.placeholder.com/80';
+        document.getElementById('driver-phone').value = currentProfile.phone || '';
       }
     }
 
@@ -244,12 +245,12 @@
       clearSaveStatus();
     }
 
-    // 2. Сохранить профиль
     async function saveDriver() {
       const form = new FormData();
       form.append('tg_id', document.getElementById('driver-id').value);
       form.append('name',  document.getElementById('driver-name').value.trim());
       form.append('city',  document.getElementById('driver-city').value.trim());
+      form.append('phone', document.getElementById('driver-phone').value.trim());
       const file = document.getElementById('driver-avatar').files[0];
       if (file) form.append('avatar', file);
 
@@ -265,7 +266,6 @@
         if (data.status === 'ok') {
           showSaveStatus('Сохранено');
           setTimeout(clearSaveStatus, 2500);
-          // Обновить view
           loadDriverProfile(document.getElementById('driver-id').value);
         } else {
           throw new Error('Статус != ok: ' + JSON.stringify(data));
@@ -288,7 +288,6 @@
       el.classList.add('hide');
     }
 
-    // 3. История заказов
     function loadDriverOrders() {
       fetch('/api/orders')
         .then(r => r.json())
@@ -305,7 +304,6 @@
         });
     }
 
-    // Красивый статус — теперь по факту!
     function setDriverStatus(status) {
       const el = document.getElementById('access-status');
       if (status === 'active') {
@@ -320,7 +318,6 @@
     function refreshStatus() {
       const btn = document.querySelector('.status-refresh-btn');
       btn.classList.add('spin');
-      // Перезапрашиваем данные и обновляем статус по факту
       fetch('/api/drivers')
         .then(res => res.json())
         .then(drivers => {
@@ -328,9 +325,15 @@
           if (driver) {
             currentStatus = driver.status || 'active';
             setDriverStatus(currentStatus);
+            // Обновляем телефон в режиме просмотра
+            showProfileView(driver);
           }
         })
         .finally(() => setTimeout(()=>btn.classList.remove('spin'), 600));
+    }
+
+    function previewAvatar(event) {
+      // Можно добавить предпросмотр фото
     }
   </script>
 </body>
