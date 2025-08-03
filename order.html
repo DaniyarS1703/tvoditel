@@ -132,7 +132,7 @@
     </div>
   </div>
   <script>
-    // Маска для телефона — теперь как в регистрации
+    // Корректная маска + мягкая валидация!
     const phoneInput = document.getElementById('phoneInput');
     phoneInput.value = '';
     phoneInput.addEventListener('focus', function() {
@@ -155,11 +155,10 @@
       if (val.length === 0) phoneInput.value = '';
     });
 
-    // Валидация формы
+    // Улучшенная валидация (проходит, если реально введён 10-значный номер)
     function validateForm() {
       let ok = true;
       let error = '';
-      // Получаем поля
       const city = document.getElementById('cityInput');
       const name = document.getElementById('nameInput');
       const phone = document.getElementById('phoneInput');
@@ -168,15 +167,11 @@
       const car = document.getElementById('carInput');
       const price = document.getElementById('priceInput');
       [city, name, phone, routeFrom, routeTo, car, price].forEach(el=>el.classList.remove('error'));
-      // Проверка города
       if (!city.value.trim()) { error = 'Укажите город!'; ok = false; city.classList.add('error'); }
       else if (!name.value.trim()) { error = 'Укажите имя!'; ok = false; name.classList.add('error'); }
       else {
         let phoneDigits = phone.value.replace(/\D/g, '');
-        if (
-          phoneDigits.length !== 10 ||
-          !/^\+7 \(\d{3}\) \d{3} \d{2} \d{2}$/.test(phone.value)
-        ) {
+        if (phoneDigits.length !== 10) {
           error = 'Укажите корректный телефон!';
           ok = false; phone.classList.add('error');
         }
