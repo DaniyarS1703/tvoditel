@@ -245,7 +245,9 @@
                   if (!o) return;
                   if (driverStatus === 'active') {
                     let phone = o.phone || '';
+                    let commentHtml = o.comment ? `<div style="color:#858585;font-size:.97em;font-style:italic;margin-bottom:7px;">Комментарий: ${o.comment}</div>` : '';
                     phoneBlock.innerHTML = `
+                      ${commentHtml}
                       Телефон клиента:<br>
                       <span style="font-size:1.16em;letter-spacing:.01em;">${phone}</span><br>
                       <button class="phone-btn" onclick="window.open('tel:${phone.replace(/\D/g,'')}');event.stopPropagation();">Позвонить</button>
