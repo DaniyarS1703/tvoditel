@@ -132,7 +132,7 @@
     </div>
   </div>
   <script>
-    // Корректная маска для телефона с учетом вставки
+    // Маска для телефона — теперь как в регистрации
     const phoneInput = document.getElementById('phoneInput');
     phoneInput.value = '';
     phoneInput.addEventListener('focus', function() {
@@ -141,7 +141,7 @@
     phoneInput.addEventListener('blur', function() {
       if (phoneInput.value === '+7 ') phoneInput.value = '';
     });
-    phoneInput.addEventListener('input', function(e) {
+    phoneInput.addEventListener('input', function() {
       let val = phoneInput.value.replace(/\D/g, '');
       if (val.startsWith('8')) val = '7' + val.slice(1);
       if (val.startsWith('7')) val = val.slice(1); // оставляем только 10 цифр после 7
@@ -152,11 +152,10 @@
       if (val.length >= 6) formatted += ' ' + val.substring(6, 8);
       if (val.length >= 8) formatted += ' ' + val.substring(8, 10);
       phoneInput.value = formatted.trim();
-      // Если всё стёрли, оставить пусто
       if (val.length === 0) phoneInput.value = '';
     });
 
-    // Валидация
+    // Валидация формы
     function validateForm() {
       let ok = true;
       let error = '';
@@ -168,27 +167,23 @@
       const routeTo = document.getElementById('routeToInput');
       const car = document.getElementById('carInput');
       const price = document.getElementById('priceInput');
-      // Очищаем ошибки
       [city, name, phone, routeFrom, routeTo, car, price].forEach(el=>el.classList.remove('error'));
       // Проверка города
       if (!city.value.trim()) { error = 'Укажите город!'; ok = false; city.classList.add('error'); }
-      // Имя
       else if (!name.value.trim()) { error = 'Укажите имя!'; ok = false; name.classList.add('error'); }
-      // Телефон
       else {
         let phoneDigits = phone.value.replace(/\D/g, '');
-        if (phoneDigits.length !== 10 || !phone.value.match(/^\+7 \(\d{3}\) \d{3} \d{2} \d{2}$/)) {
+        if (
+          phoneDigits.length !== 10 ||
+          !/^\+7 \(\d{3}\) \d{3} \d{2} \d{2}$/.test(phone.value)
+        ) {
           error = 'Укажите корректный телефон!';
           ok = false; phone.classList.add('error');
         }
       }
-      // Откуда
       if (!routeFrom.value.trim()) { error = 'Укажите, откуда ехать!'; ok = false; routeFrom.classList.add('error'); }
-      // Куда
       else if (!routeTo.value.trim()) { error = 'Укажите, куда ехать!'; ok = false; routeTo.classList.add('error'); }
-      // Марка
       else if (!car.value.trim()) { error = 'Укажите марку машины!'; ok = false; car.classList.add('error'); }
-      // Цена
       else if (!price.value || isNaN(price.value) || price.value <= 0) { error = 'Укажите цену!'; ok = false; price.classList.add('error'); }
       document.getElementById('orderError').textContent = ok ? '' : error;
       return ok;
