@@ -96,6 +96,8 @@
       font-size: 0.97em;
       font-style: italic;
       margin-bottom: 6px;
+      margin-top: 2px;
+      word-break: break-word;
     }
     .order-phone-block {
       margin-top: 10px;
@@ -206,7 +208,7 @@
             return;
           }
           el.innerHTML = data.map((o,i)=>`
-            <div class="order-card" data-idx="${i}" data-comment="${o.comment ? encodeURIComponent(o.comment) : ''}">
+            <div class="order-card" data-idx="${i}">
               <div class="order-head-row">
                 <div class="order-head">
                   <span class="order-client">${o.name || 'Без имени'}</span>
@@ -231,7 +233,6 @@
               }
               document.querySelectorAll('.order-phone-block').forEach(b=>b.style.display='none');
               let idx = this.getAttribute('data-idx');
-              let comment = decodeURIComponent(this.getAttribute('data-comment') || '');
               fetch('/api/orders')
                 .then(r=>r.json())
                 .then(data=>{
@@ -239,9 +240,7 @@
                   if (!o) return;
                   if (driverStatus === 'active') {
                     let phone = o.phone || '';
-                    let commentHtml = comment ? `<div class="order-comment" style="color:#858585;font-size:.99em;font-style:italic;margin-bottom:7px;">Комментарий: ${comment}</div>` : '';
                     phoneBlock.innerHTML = `
-                      ${commentHtml}
                       <div style="font-weight:600;margin-bottom:5px;">Телефон клиента:</div>
                       <span style="font-size:1.16em;letter-spacing:.01em;">${phone}</span><br>
                       <button class="phone-btn" onclick="window.open('tel:${phone.replace(/\D/g,'')}');event.stopPropagation();">Позвонить</button>
