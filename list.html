@@ -177,14 +177,12 @@
     <div id="orders-list"></div>
   </div>
   <script>
-    let driverStatus = 'inactive'; // По умолчанию. 
+    let driverStatus = 'inactive';
     let driverId = null;
 
-    // Получить ID и статус водителя из localStorage/URL
     function getDriverInfo() {
       const params = new URLSearchParams(window.location.search);
       driverId = params.get('user_id') || localStorage.getItem('tg_user_id') || '';
-      // Получим список водителей и определим статус
       if (driverId) {
         fetch('/api/drivers')
           .then(res => res.json())
@@ -198,7 +196,6 @@
       }
     }
 
-    // Рендер заказов
     function loadOrders() {
       fetch('/api/orders')
         .then(r=>r.json())
@@ -209,7 +206,7 @@
             return;
           }
           el.innerHTML = data.map((o,i)=>`
-            <div class="order-card" data-idx="${i}">
+            <div class="order-card" data-idx="${i}" data-comment="${o.comment ? encodeURIComponent(o.comment) : ''}">
               <div class="order-head-row">
                 <div class="order-head">
                   <span class="order-client">${o.name || 'Без имени'}</span>
@@ -225,19 +222,16 @@
               <div class="order-phone-block" style="display:none"></div>
             </div>
           `).join('');
-          // События на карточки
           Array.from(document.querySelectorAll('.order-card')).forEach(card=>{
             card.onclick = function(e) {
               let phoneBlock = this.querySelector('.order-phone-block');
-              // Если уже открыт — свернуть
               if (phoneBlock.style.display === 'block') {
                 phoneBlock.style.display = 'none';
                 return;
               }
-              // Скрываем у остальных
               document.querySelectorAll('.order-phone-block').forEach(b=>b.style.display='none');
-              // Если водитель активен — показать телефон и комментарий
               let idx = this.getAttribute('data-idx');
+              let comment = decodeURIComponent(this.getAttribute('data-comment') || '');
               fetch('/api/orders')
                 .then(r=>r.json())
                 .then(data=>{
@@ -245,7 +239,7 @@
                   if (!o) return;
                   if (driverStatus === 'active') {
                     let phone = o.phone || '';
-                    let commentHtml = o.comment ? `<div class="order-comment" style="color:#858585;font-size:.99em;font-style:italic;margin-bottom:7px;">Комментарий: ${o.comment}</div>` : '';
+                    let commentHtml = comment ? `<div class="order-comment" style="color:#858585;font-size:.99em;font-style:italic;margin-bottom:7px;">Комментарий: ${comment}</div>` : '';
                     phoneBlock.innerHTML = `
                       ${commentHtml}
                       <div style="font-weight:600;margin-bottom:5px;">Телефон клиента:</div>
@@ -265,7 +259,6 @@
         });
     }
 
-    // Первый запуск — получаем статус водителя
     document.addEventListener('DOMContentLoaded', getDriverInfo);
 
   </script>
