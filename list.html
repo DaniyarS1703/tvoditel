@@ -245,7 +245,8 @@
                   if (!o) return;
                   if (driverStatus === 'active') {
                     let phone = o.phone || '';
-                    let commentHtml = o.comment ? `<div style="color:#858585;font-size:.97em;font-style:italic;margin-bottom:7px;">Комментарий: ${o.comment}</div>` : '';
+                    // Комментарий показываем первым — если он есть!
+                    let commentHtml = o.comment ? `<div style="color:#2080d5; font-size:1.02em; background:#e6f2fa; border-radius:8px; padding:7px 10px 6px 10px; margin-bottom:8px; font-style:italic; font-weight:500;">Комментарий: ${o.comment}</div>` : '';
                     phoneBlock.innerHTML = `
                       ${commentHtml}
                       Телефон клиента:<br>
