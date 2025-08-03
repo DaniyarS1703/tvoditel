@@ -236,7 +236,7 @@
               }
               // Скрываем у остальных
               document.querySelectorAll('.order-phone-block').forEach(b=>b.style.display='none');
-              // Если водитель активен — показать телефон и комментарий!
+              // Если водитель активен — показать телефон и комментарий
               let idx = this.getAttribute('data-idx');
               fetch('/api/orders')
                 .then(r=>r.json())
@@ -245,11 +245,10 @@
                   if (!o) return;
                   if (driverStatus === 'active') {
                     let phone = o.phone || '';
-                    // Комментарий показываем ПЕРВЫМ, если он есть
-                    let commentHtml = o.comment ? `<div style="color:#2080d5; font-size:1.02em; background:#e6f2fa; border-radius:8px; padding:7px 10px 6px 10px; margin-bottom:8px; font-style:italic; font-weight:500;">Комментарий: ${o.comment}</div>` : '';
+                    let commentHtml = o.comment ? `<div class="order-comment" style="color:#858585;font-size:.99em;font-style:italic;margin-bottom:7px;">Комментарий: ${o.comment}</div>` : '';
                     phoneBlock.innerHTML = `
                       ${commentHtml}
-                      Телефон клиента:<br>
+                      <div style="font-weight:600;margin-bottom:5px;">Телефон клиента:</div>
                       <span style="font-size:1.16em;letter-spacing:.01em;">${phone}</span><br>
                       <button class="phone-btn" onclick="window.open('tel:${phone.replace(/\D/g,'')}');event.stopPropagation();">Позвонить</button>
                       <button class="phone-btn" onclick="navigator.clipboard.writeText('${phone}');event.stopPropagation();">Скопировать</button>
