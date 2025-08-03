@@ -88,7 +88,7 @@ def delete_order(idx):
         return '', 200
     return 'Not Found', 404
 
-# Регистрация водителей (POST)
+# Регистрация и обновление водителей (POST)
 @app.route('/api/drivers', methods=['POST'])
 def register_driver_api():
     tg_id = request.form.get('tg_id')
@@ -117,7 +117,21 @@ def register_driver_api():
         with open(DRIVERS_FILE, 'r', encoding='utf-8') as f:
             try: drivers = json.load(f)
             except: drivers = []
-    drivers.append(data)
+
+    # --- Исправление: обновляем профиль, если tg_id уже есть ---
+    updated = False
+    for idx, d in enumerate(drivers):
+        if d.get('tg_id') == tg_id:
+            # Сохраняем статус и аватар, если их не меняли
+            data['status'] = d.get('status', 'active')
+            if not data.get('avatar') and d.get('avatar'):
+                data['avatar'] = d.get('avatar')
+            drivers[idx] = data
+            updated = True
+            break
+    if not updated:
+        drivers.append(data)
+
     with open(DRIVERS_FILE, 'w', encoding='utf-8') as f:
         json.dump(drivers, f, ensure_ascii=False, indent=2)
     return jsonify({'status':'ok'})
