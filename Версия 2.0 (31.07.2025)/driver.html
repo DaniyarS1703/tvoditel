@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    /* ... (стили без изменений) ... */
     .profile, .orders { padding:24px; }
     .profile-view {
       text-align: center;
@@ -173,25 +172,9 @@
 
     if (window.Telegram?.WebApp) window.Telegram.WebApp.expand();
 
-    // Универсальное получение Telegram ID:
-    function getTelegramId() {
-      // 1. Пытаемся получить реальный ID через Telegram WebApp API
-      if (
-        window.Telegram &&
-        window.Telegram.WebApp &&
-        window.Telegram.WebApp.initDataUnsafe &&
-        window.Telegram.WebApp.initDataUnsafe.user &&
-        window.Telegram.WebApp.initDataUnsafe.user.id
-      ) {
-        return window.Telegram.WebApp.initDataUnsafe.user.id;
-      }
-      // 2. Старый механизм (URL, localStorage, заглушка)
-      const params = new URLSearchParams(window.location.search);
-      return params.get('user_id') || localStorage.getItem('tg_user_id') || '1234567890';
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
-      const uid = getTelegramId();
+      const params = new URLSearchParams(window.location.search);
+      const uid = params.get('user_id') || localStorage.getItem('tg_user_id') || '1234567890';
       currentUid = uid;
       document.getElementById('driver-id').value = uid;
       loadDriverProfile(uid);

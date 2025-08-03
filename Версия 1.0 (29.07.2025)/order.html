@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Оформить заказ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #f6faff; }
+    .order-container {
+      max-width: 390px;
+      margin: 32px auto 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 6px 32px #51a4ff13, 0 1.5px 7px #bbe2fa55;
+      padding: 24px 14px 18px 14px;
+    }
+    .order-title {
+      text-align: center;
+      font-size: 1.52em;
+      font-weight: bold;
+      margin-bottom: 18px;
+      color: #278ee2;
+      letter-spacing: .01em;
+    }
+    .order-form label {
+      font-size: 1em;
+      margin-bottom: 4px;
+      color: #385169;
+      font-weight: 500;
+      display: block;
+      margin-top: 2px;
+    }
+    .order-form input[type="text"],
+    .order-form input[type="tel"],
+    .order-form input[type="number"] {
+      width: 100%;
+      margin-bottom: 13px;
+      padding: 11px;
+      border-radius: 8px;
+      border: 1.3px solid #bbe2fa;
+      font-size: 1.08em;
+      background: #f8fcff;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color .17s, box-shadow .17s;
+    }
+    .order-form input.error, .order-form textarea.error {
+      border-color: #ff7474;
+      background: #fff6f6;
+    }
+    .order-form textarea {
+      width: 100%;
+      min-height: 46px;
+      margin-bottom: 13px;
+      padding: 11px;
+      border-radius: 8px;
+      border: 1.3px solid #bbe2fa;
+      font-size: 1.07em;
+      background: #f8fcff;
+      box-sizing: border-box;
+      resize: vertical;
+      outline: none;
+      transition: border-color .17s, box-shadow .17s;
+    }
+    .order-form .order-btn {
+      width: 100%;
+      padding: 13px 0;
+      background: #ffe680;
+      color: #444;
+      border-radius: 12px;
+      font-size: 1.13em;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: background .15s;
+      margin-top: 3px;
+    }
+    .order-form .order-btn:active { background: #fff2a3; }
+    .error-text {
+      color: #df2f2f;
+      font-size: 0.99em;
+      margin-bottom: 8px;
+      text-align: center;
+      min-height: 18px;
+      font-weight: 500;
+    }
+    .order-footer {
+      margin-top: 16px;
+      text-align: center;
+    }
+    .order-footer button {
+      background: none;
+      border: none;
+      color: #278ee2;
+      font-size: 1em;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <button class="small-button btn-back" onclick="location.href='/'">← Назад</button>
+    <div class="city">Оформить заказ</div>
+  </header>
+  <div class="order-container">
+    <div class="order-title">Оформить заказ</div>
+    <form class="order-form" id="orderForm" autocomplete="off">
+      <label for="cityInput">Город</label>
+      <input type="text" id="cityInput" placeholder="Город" value="Алматы">
+      <label for="nameInput">Имя</label>
+      <input type="text" id="nameInput" placeholder="Ваше имя">
+      <label for="phoneInput">Телефон</label>
+      <input type="tel" id="phoneInput" placeholder="+7 (___) ___ __ __">
+      <label for="routeFromInput">Откуда</label>
+      <input type="text" id="routeFromInput" placeholder="Адрес, улица, район">
+      <label for="routeToInput">Куда</label>
+      <input type="text" id="routeToInput" placeholder="Адрес, улица, район">
+      <label for="carInput">Марка машины</label>
+      <input type="text" id="carInput" placeholder="Например: Toyota">
+      <label for="priceInput">Цена (₸)</label>
+      <input type="number" id="priceInput" placeholder="Цена" min="0" max="1000000">
+      <label for="commentInput">Комментарий (необязательно)</label>
+      <textarea id="commentInput" placeholder="Комментарий"></textarea>
+      <div class="error-text" id="orderError"></div>
+      <button type="submit" class="order-btn">Заказать</button>
+    </form>
+    <div class="order-footer">
+      <button onclick="location.href='/'">← На главную</button>
+    </div>
+  </div>
+  <script>
+    // Маска для телефона
+    function formatPhone(input) {
+      let val = input.value.replace(/\D/g, '');
+      if (val.length === 0) { input.value = '+7 '; return; }
+      val = val.substring(0, 10); // Только 10 цифр после +7
+      let formatted = '+7 ';
+      if (val.length > 0) formatted += '(' + val.substring(0, 3);
+      if (val.length >= 3) formatted += ') ' + val.substring(3, 6);
+      if (val.length >= 6) formatted += ' ' + val.substring(6, 8);
+      if (val.length >= 8) formatted += ' ' + val.substring(8, 10);
+      input.value = formatted;
+    }
+    const phoneInput = document.getElementById('phoneInput');
+    phoneInput.value = '+7 ';
+    phoneInput.addEventListener('input', () => formatPhone(phoneInput));
+
+    // Валидация
+    function validateForm() {
+      let ok = true;
+      let error = '';
+      // Получаем поля
+      const city = document.getElementById('cityInput');
+      const name = document.getElementById('nameInput');
+      const phone = document.getElementById('phoneInput');
+      const routeFrom = document.getElementById('routeFromInput');
+      const routeTo = document.getElementById('routeToInput');
+      const car = document.getElementById('carInput');
+      const price = document.getElementById('priceInput');
+      // Очищаем ошибки
+      [city, name, phone, routeFrom, routeTo, car, price].forEach(el=>el.classList.remove('error'));
+      // Проверка города
+      if (!city.value.trim()) { error = 'Укажите город!'; ok = false; city.classList.add('error'); }
+      // Имя
+      else if (!name.value.trim()) { error = 'Укажите имя!'; ok = false; name.classList.add('error'); }
+      // Телефон
+      else {
+        let phoneDigits = phone.value.replace(/\D/g, '');
+        if (phoneDigits.length !== 11 || !phone.value.match(/^\+7 \(\d{3}\) \d{3} \d{2} \d{2}$/)) {
+          error = 'Укажите корректный телефон!';
+          ok = false; phone.classList.add('error');
+        }
+      }
+      // Откуда
+      if (!routeFrom.value.trim()) { error = 'Укажите, откуда ехать!'; ok = false; routeFrom.classList.add('error'); }
+      // Куда
+      else if (!routeTo.value.trim()) { error = 'Укажите, куда ехать!'; ok = false; routeTo.classList.add('error'); }
+      // Марка
+      else if (!car.value.trim()) { error = 'Укажите марку машины!'; ok = false; car.classList.add('error'); }
+      // Цена
+      else if (!price.value || isNaN(price.value) || price.value <= 0) { error = 'Укажите цену!'; ok = false; price.classList.add('error'); }
+      document.getElementById('orderError').textContent = ok ? '' : error;
+      return ok;
+    }
+
+    // Отправка формы
+    document.getElementById('orderForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (!validateForm()) return;
+      const city = document.getElementById('cityInput').value.trim();
+      const name = document.getElementById('nameInput').value.trim();
+      const phone = document.getElementById('phoneInput').value.trim();
+      const routeFrom = document.getElementById('routeFromInput').value.trim();
+      const routeTo = document.getElementById('routeToInput').value.trim();
+      const car = document.getElementById('carInput').value.trim();
+      const price = document.getElementById('priceInput').value.trim();
+      const comment = document.getElementById('commentInput').value.trim();
+      const formData = new FormData();
+      formData.append('city', city);
+      formData.append('name', name);
+      formData.append('phone', phone);
+      formData.append('route_from', routeFrom);
+      formData.append('route_to', routeTo);
+      formData.append('car_model', car);
+      formData.append('price', price);
+      formData.append('comment', comment);
+      try {
+        const res = await fetch('/submit', { method: 'POST', body: formData });
+        if (res.ok) {
+          window.location.href = '/list';
+        } else {
+          document.getElementById('orderError').textContent = 'Ошибка отправки!';
+        }
+      } catch (err) {
+        document.getElementById('orderError').textContent = 'Ошибка: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
